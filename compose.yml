@@ -1,0 +1,22 @@
+services:
+  api_service:
+    container_name: api
+    ports:
+      - "8080:8080"
+    image: frankefelipe5/braspag-automator-api:latest
+    networks:
+      - api_net
+    env_file:
+      - prod.env
+
+  nginx:
+    container_name: nginx
+    image: frankefelipe5/braspag-automator-nginx:latest
+    ports:
+      - "80:80"
+    networks:
+      - api_net
+
+networks:
+  api_net: {}
+    
