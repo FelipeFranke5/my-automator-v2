@@ -1,5 +1,6 @@
 package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service;
 
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -8,6 +9,9 @@ import org.springframework.stereotype.Service;
 public class MerchantValidator {
 
   private static final Logger LOG = LoggerFactory.getLogger(MerchantValidator.class);
+  private static final String EMAIL_REGEX =
+      "^[a-zA-Z0-9_+&*-]+(?:\\\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\\\.)+[a-zA-Z]{2,7}$";
+  private static final Pattern PATTERN = Pattern.compile(EMAIL_REGEX);
 
   private boolean inputNullOrBlank(String merchantOrMerchantList) {
     return merchantOrMerchantList == null || merchantOrMerchantList.isBlank();
@@ -72,5 +76,13 @@ public class MerchantValidator {
       LOG.info("Validating input for single EC");
       return singleEcIsValid(merchantOrMerchantList);
     }
+  }
+
+  public boolean validEmail(String address) {
+    if (address == null || address.isEmpty()) {
+      return false;
+    }
+
+    return PATTERN.matcher(address).matches();
   }
 }
