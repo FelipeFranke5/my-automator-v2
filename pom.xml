@@ -29,6 +29,7 @@
 	<properties>
 		<java.version>17</java.version>
 		<spotless.version>2.44.4</spotless.version>
+		<poi.version>5.4.1</poi.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -51,6 +52,23 @@
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
+		</dependency>
+
+		<dependency> 
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId> 
+			<version>${poi.version}</version> 
+		</dependency>
+
+		<dependency> 
+			<groupId>org.apache.poi</groupId> 
+			<artifactId>poi-ooxml</artifactId> 
+			<version>${poi.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
 	</dependencies>
 
