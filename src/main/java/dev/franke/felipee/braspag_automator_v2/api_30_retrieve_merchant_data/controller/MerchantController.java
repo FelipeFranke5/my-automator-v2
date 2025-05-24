@@ -1,5 +1,7 @@
 package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.controller;
 
+import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dto.AutomationResult;
+import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dto.MerchantsToEmailInput;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.MerchantService;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
@@ -43,6 +45,37 @@ public class MerchantController {
     }
 
     return ResponseEntity.status(201).body(bodyResponse);
+  }
+
+  @GetMapping("/email")
+  public ResponseEntity<?> getMerchantsToEmail(
+      @RequestHeader(name = "Authorization", required = true) String authorizationHeader,
+      @RequestBody MerchantsToEmailInput input) {
+
+    if (!headerValidator.headerIsValid(authorizationHeader)) {
+      return ResponseEntity.status(401).build();
+    }
+
+    if (input == null) {
+      return ResponseEntity.status(400).body("Email is required");
+    }
+
+    byte automationResult = merchantService.sendEmailWithExcelResults(input.email());
+    AutomationResult result;
+
+    switch (automationResult) {
+      case 2:
+        result = new AutomationResult("No results to send");
+        return ResponseEntity.status(404).body(result);
+
+      case 1:
+        result = new AutomationResult("Invalid Email");
+        return ResponseEntity.status(400).body(result);
+
+      default:
+        result = new AutomationResult("OK");
+        return ResponseEntity.status(200).body(result);
+    }
   }
 
   @GetMapping

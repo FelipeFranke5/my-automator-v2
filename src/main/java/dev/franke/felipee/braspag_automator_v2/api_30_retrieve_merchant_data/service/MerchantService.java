@@ -17,7 +17,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,18 +39,91 @@ public class MerchantService {
   private final AutomationFileHandler fileHandler;
   private final MerchantRepository merchantRepository;
   private final MerchantValidator validator;
+  private final EmailSender emailSender;
 
   public MerchantService(
       ProcessExecutionAPI30 processExecution,
       ObjectMapper objectMapper,
       AutomationFileHandler fileHandler,
       MerchantRepository merchantRepository,
-      MerchantValidator validator) {
+      MerchantValidator validator,
+      EmailSender emailSender) {
     this.processExecution = processExecution;
     this.objectMapper = objectMapper;
     this.fileHandler = fileHandler;
     this.merchantRepository = merchantRepository;
     this.validator = validator;
+    this.emailSender = emailSender;
+  }
+
+  private Optional<byte[]> writeToExcel(List<Merchant> merchants) {
+    try {
+      byte[] excelBytes = fileHandler.writeToExcelFile(merchants);
+      return Optional.of(excelBytes);
+    } catch (IOException ioException) {
+      LOG.error("Could not execute routine to write excel", ioException);
+      return Optional.empty();
+    }
+  }
+
+  // In case of success
+  private void sendEmail(byte[] excelBytes, String emailAddress) {
+    emailSender.sendEmailWithResultsAsync(excelBytes, emailAddress);
+  }
+
+  // In case of failure
+  private void sendEmail(String emailAddress) {
+    emailSender.sendEmailInformingFailureAync(emailAddress);
+  }
+
+  public byte sendEmailWithExcelResults(String emailAddress) {
+    LOG.info("Initializing service - Write to Excel and Send Email");
+    
+    // Return 0 -> Task Completed
+    // Return 1 -> Email is not valid
+    // Return 2 -> Nothing to write
+
+    if (!validator.validEmail(emailAddress)) {
+      LOG.warn("Email Address is not valid!");
+      return 1;
+    }
+
+    List<Merchant> merchants = merchantRepository.findAll();
+
+    if (merchants.isEmpty()) {
+      LOG.info("Nothing to write!");
+      return 2;
+    }
+
+    LOG.info("Attempting to write results to Excel file");
+    LOG.info("And then send Email with Excel file");
+    LOG.info("Results count: {}", merchants.size());
+
+    LOG.info("Start async task");
+    CompletableFuture.runAsync(
+        () -> {
+
+          // Start - Async Task
+          Optional<byte[]> optionalExcelBytes = writeToExcel(merchants);
+
+          optionalExcelBytes.ifPresentOrElse(
+              excelBytes -> {
+                LOG.info("Result is an optional of byte[]");
+                LOG.info("Sending email with result");
+                sendEmail(excelBytes, emailAddress);
+              },
+              () -> {
+                LOG.warn("Result is an empty optional, which means an error has occured");
+                LOG.warn("Sending email to inform error");
+                sendEmail(emailAddress);
+              });
+
+          // End - Async Task
+        },
+        executor);
+
+    LOG.info("Async task already started. I am free now to return");
+    return 0;
   }
 
   public List<OutputMerchant> listOfMerchants() {
