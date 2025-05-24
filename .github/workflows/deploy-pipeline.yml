@@ -30,14 +30,19 @@ jobs:
           name: spring-boot-artifact
           path: target/*.jar
 
+      - name: Get Branch Name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release for ${{ github.ref }}
+          tag_name: ${{ steps.extract_branch.outputs.branch }}
+          release_name: Release for ${{ steps.extract_branch.outputs.branch }}
           draft: false
           prerelease: false
 
