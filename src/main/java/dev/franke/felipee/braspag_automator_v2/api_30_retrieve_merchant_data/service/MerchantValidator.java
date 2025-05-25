@@ -10,7 +10,7 @@ public class MerchantValidator {
 
   private static final Logger LOG = LoggerFactory.getLogger(MerchantValidator.class);
   private static final String EMAIL_REGEX =
-      "^[a-zA-Z0-9_+&*-]+(?:\\\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\\\.)+[a-zA-Z]{2,7}$";
+      "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
   private static final Pattern PATTERN = Pattern.compile(EMAIL_REGEX);
 
   private boolean inputNullOrBlank(String merchantOrMerchantList) {

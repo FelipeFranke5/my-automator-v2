@@ -57,7 +57,7 @@ public class HeaderValidator {
   }
 
   private String getEcondedString(String headerValue) {
-    return headerValue.split("Base64 ")[1].trim();
+    return headerValue.split("Base64 ")[1];
   }
 
   private String getEncodedHeader() {
