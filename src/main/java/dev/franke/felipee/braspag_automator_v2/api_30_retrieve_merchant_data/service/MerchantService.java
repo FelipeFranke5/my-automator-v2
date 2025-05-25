@@ -68,12 +68,12 @@ public class MerchantService {
 
   // In case of success
   private void sendEmail(byte[] excelBytes, String emailAddress) {
-    emailSender.sendEmailWithResultsAsync(excelBytes, emailAddress);
+    emailSender.sendEmailWithResults(excelBytes, emailAddress);
   }
 
   // In case of failure
   private void sendEmail(String emailAddress) {
-    emailSender.sendEmailInformingFailureAync(emailAddress);
+    emailSender.sendEmailInformingFailure(emailAddress);
   }
 
   public byte sendEmailWithExcelResults(String emailAddress) {
