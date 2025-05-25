@@ -38,7 +38,7 @@ jobs:
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: extract_branch
 
-      - name: Create Release
+      - name: Create Project Release
         id: create_release
         uses: actions/create-release@v1
         env:
