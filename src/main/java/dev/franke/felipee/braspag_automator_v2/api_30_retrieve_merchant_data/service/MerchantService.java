@@ -197,6 +197,14 @@ public class MerchantService {
   }
 
   private void runAutomationForSingleMerchant(String ec) {
+    LOG.info("Waiting a few seconds before starting automation");
+    try {
+      Thread.sleep(5000); // Wait 5 seconds before starting automation
+    } catch (InterruptedException interruptedException) {
+      LOG.error("Thread was interrupted while waiting", interruptedException);
+      Thread.currentThread().interrupt(); // Restore interrupted status
+    }
+
     byte currentAutomations = numberOfAutomationsRunning().numberOfAutomations();
     byte timeout = 5; // Timeout in minutes
     LocalDateTime startTime = LocalDateTime.now();
@@ -216,14 +224,6 @@ public class MerchantService {
         LOG.error("Thread was interrupted while waiting", interruptedException);
         Thread.currentThread().interrupt();
       }
-    }
-
-    LOG.info("Waiting a few seconds before starting automation");
-    try {
-      Thread.sleep(5000); // Wait 5 seconds before starting automation
-    } catch (InterruptedException interruptedException) {
-      LOG.error("Thread was interrupted while waiting", interruptedException);
-      Thread.currentThread().interrupt(); // Restore interrupted status
     }
 
     LOG.info("Starting Automation process for EC");
