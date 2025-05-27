@@ -54,7 +54,7 @@ public class AutomationFileHandler {
   public byte[] writeToExcelFile(List<Merchant> merchants) throws IOException {
     LOG.info("Initializing function to write to excel");
     try (XSSFWorkbook workbook = new XSSFWorkbook()) {
-      Sheet sheet = workbook.createSheet("Automation");
+      Sheet sheet = workbook.createSheet("Serviços Habilitados");
       sheet.setColumnWidth(0, 6000);
       sheet.setColumnWidth(1, 4000);
 
@@ -62,19 +62,23 @@ public class AutomationFileHandler {
       CellStyle headerStyle = workbook.createCellStyle();
       headerStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
       headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+      headerStyle.setAlignment(HorizontalAlignment.CENTER);
+      headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
       XSSFFont font = workbook.createFont();
       font.setFontName("Calibri");
       font.setFontHeightInPoints((short) 12);
       font.setBold(true);
+      font.setColor(IndexedColors.WHITE.getIndex());
       headerStyle.setFont(font);
 
-      XSSFFont bodyFont = workbook.createFont();
-      font.setFontName("Calibri");
-      font.setFontHeightInPoints((short) 9);
-
       CellStyle bodyStyle = workbook.createCellStyle();
+      XSSFFont bodyFont = workbook.createFont();
+      bodyFont.setFontName("Calibri");
+      bodyFont.setFontHeightInPoints((short) 9);
       bodyStyle.setFont(bodyFont);
+      bodyStyle.setAlignment(HorizontalAlignment.CENTER);
+      bodyStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
       Cell headerCell = header.createCell(0);
       headerCell.setCellValue("EC");
