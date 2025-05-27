@@ -29,8 +29,7 @@ public class EmailSender {
       MimeMessageHelper mimeHelper = new MimeMessageHelper(mimeMessage);
 
       // Email Configs
-      String subject =
-          "[Falha] Automação Braspag - Consulta API 3.0 - ID: " + UUID.randomUUID();
+      String subject = "[Falha] Automação Braspag - Consulta API 3.0 - ID: " + UUID.randomUUID();
       String body = "A automação não foi concluída com sucesso. Tente novamente";
       mimeHelper.setTo(emailAddressTo);
       mimeHelper.setSubject(subject);
@@ -61,7 +60,7 @@ public class EmailSender {
       LOG.info("Email Configuration Defined");
 
       // Attach Excel
-      String attachmentName = "automacao-" + UUID.randomUUID() + ".xlsx";
+      String attachmentName = UUID.randomUUID() + ".xlsx";
       mimeHelper.addAttachment(attachmentName, new ByteArrayResource(excelBytes));
       LOG.info("Attachment Defined");
 
