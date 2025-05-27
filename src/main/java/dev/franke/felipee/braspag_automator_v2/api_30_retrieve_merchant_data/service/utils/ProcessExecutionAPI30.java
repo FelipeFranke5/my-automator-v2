@@ -20,6 +20,30 @@ public class ProcessExecutionAPI30 {
   @Value("${braspag.prod.password}")
   private String password;
 
+  // Show number of Python processes running
+  public byte getNumberOfPythonProcesses() {
+    LOG.info("Counting the number of Python processes running");
+    String[] processCommand = {"/bin/sh", "-c", "ps -ef | grep python | grep -v grep | wc -l"};
+    ProcessBuilder processBuilder = new ProcessBuilder(processCommand);
+    processBuilder.redirectErrorStream(true);
+
+    try {
+      Process process = processBuilder.start();
+      InputStreamReader inputStreamReader =
+          new InputStreamReader(process.getInputStream(), Charset.defaultCharset());
+      BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+      String line = bufferedReader.readLine();
+      LOG.info("Number of Python processes running: {}", line);
+      return Byte.parseByte(line.trim());
+    } catch (IOException ioException) {
+      LOG.error("Error while counting Python processes", ioException);
+      return -1; // Return -1 to indicate an error
+    } catch (NumberFormatException numberFormatException) {
+      LOG.error("Error parsing the number of Python processes", numberFormatException);
+      return -2; // Return -2 to indicate an error
+    }
+  }
+
   public String run(String ec) throws IOException {
     LOG.info("Starting process for Python execution");
     ProcessBuilder processBuilder = getProcessBuilder(ec);
