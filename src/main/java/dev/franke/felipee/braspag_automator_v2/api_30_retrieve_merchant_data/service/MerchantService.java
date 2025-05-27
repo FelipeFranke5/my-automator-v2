@@ -1,6 +1,7 @@
 package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dto.AutomationsRunningOutput;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dto.OutputMerchant;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.exception.ReadScriptJsonException;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.exception.ScriptLastLineIsBlankException;
@@ -39,6 +40,7 @@ public class MerchantService {
   private final AutomationFileHandler fileHandler;
   private final MerchantRepository merchantRepository;
   private final MerchantValidator validator;
+  private final FailedScriptService failedScriptService;
   private final EmailSender emailSender;
 
   public MerchantService(
@@ -47,12 +49,14 @@ public class MerchantService {
       AutomationFileHandler fileHandler,
       MerchantRepository merchantRepository,
       MerchantValidator validator,
+      FailedScriptService failedScriptService,
       EmailSender emailSender) {
     this.processExecution = processExecution;
     this.objectMapper = objectMapper;
     this.fileHandler = fileHandler;
     this.merchantRepository = merchantRepository;
     this.validator = validator;
+    this.failedScriptService = failedScriptService;
     this.emailSender = emailSender;
   }
 
@@ -76,9 +80,22 @@ public class MerchantService {
     emailSender.sendEmailInformingFailure(emailAddress);
   }
 
+  public AutomationsRunningOutput numberOfAutomationsRunning() {
+    byte automations = processExecution.getNumberOfPythonProcesses();
+    String message;
+
+    if (automations < 0) {
+      message = "Erro ao obter o numero de automacoes em execucao";
+      return new AutomationsRunningOutput(automations, message);
+    }
+
+    message = "Automacoes em execucao";
+    return new AutomationsRunningOutput(automations, message);
+  }
+
   public byte sendEmailWithExcelResults(String emailAddress) {
     LOG.info("Initializing service - Write to Excel and Send Email");
-    
+
     // Return 0 -> Task Completed
     // Return 1 -> Email is not valid
     // Return 2 -> Nothing to write
@@ -127,6 +144,7 @@ public class MerchantService {
   }
 
   public List<OutputMerchant> listOfMerchants() {
+    LOG.info("Retrieving all merchants from database");
     List<Merchant> merchants = merchantRepository.findAll();
     List<OutputMerchant> output = new ArrayList<>();
     merchants.stream()
@@ -134,34 +152,14 @@ public class MerchantService {
             merchant -> {
               OutputMerchant outputMerchant =
                   new OutputMerchant(
-                      merchant.getRecordId(),
-                      merchant.getEc(),
-                      merchant.getId(),
-                      merchant.getDocumentType(),
-                      merchant.getDocumentNumber(),
-                      merchant.getName(),
-                      merchant.getCreatedAt(),
-                      merchant.isBlocked(),
-                      merchant.isPixEnabled(),
-                      merchant.isAntifraudEnabled(),
-                      merchant.isTokenizationEnabled(),
-                      merchant.isVelocityEnabled(),
-                      merchant.isSmartRecurrencyEnabled(),
-                      merchant.isZeroDollarAuthEnabled(),
-                      merchant.isBinQueryEnabled(),
-                      merchant.isSelectiveAuthEnabled(),
-                      merchant.isTryAutomaticCancellationEnabled(),
-                      merchant.isForceBraspagAuthEnabled(),
-                      merchant.isMtlsEnabled(),
-                      merchant.isWebhookEnabled(),
-                      merchant.getWhiteListIpCount(),
-                      merchant.getRecordTimestamp());
+                      merchant.getRecordId(), merchant.getEc(), merchant.getRecordTimestamp());
               output.add(outputMerchant);
             });
     return output;
   }
 
   public void clearAllMerchants() {
+    LOG.info("Clearing all merchants from database");
     merchantRepository.deleteAll();
   }
 
@@ -177,6 +175,7 @@ public class MerchantService {
 
   // This should be called first
   public boolean inputIsValid(String merchants) {
+    LOG.info("Validating input: {}", merchants);
     return validator.validInput(merchants);
   }
 
@@ -212,6 +211,7 @@ public class MerchantService {
 
     if (ec == null || ec.isBlank() || ec.length() != 10) {
       LOG.warn("Not executing automation, because EC is not valid");
+      failedScriptService.save(ec, "O numero do EC nao e valido");
       return Optional.empty();
     }
 
@@ -223,6 +223,8 @@ public class MerchantService {
         | ReadScriptJsonException
         | ScriptLastLineIsNullException execException) {
       LOG.error("There was a error during execution", execException);
+      String errorMessage = "Erro durante execucao do script: " + execException.getMessage();
+      failedScriptService.save(ec, errorMessage);
       return Optional.empty();
     } finally {
       CompletableFuture.runAsync(() -> fileHandler.deleteJsonFileAfterAutomation(ec), executor);
@@ -243,13 +245,17 @@ public class MerchantService {
           ScriptLastLineIsBlankException,
           ReadScriptJsonException {
     try {
+      LOG.info("Reading data from file: {}", ec + ".json");
       String lastLine = processExecution.run(ec);
+
       if (lastLine == null)
         throw new ScriptLastLineIsNullException("Script Failed - Last Line Null");
       if (lastLine.isBlank())
         throw new ScriptLastLineIsBlankException("Script Failed - Last Line Blank");
       if (!lastLine.equalsIgnoreCase("Result is in JSON file"))
         throw new ScriptLastLineIsStdErrorException("Script Failed with std error - " + lastLine);
+
+      LOG.info("Last line is valid, proceeding to read JSON file");
       return objectMapper.readValue(new File(ec + ".json"), Merchant.class);
     } catch (IOException ioException) {
       String message =
