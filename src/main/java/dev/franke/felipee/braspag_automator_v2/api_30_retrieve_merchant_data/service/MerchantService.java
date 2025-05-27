@@ -214,16 +214,10 @@ public class MerchantService {
         currentAutomations = numberOfAutomationsRunning().numberOfAutomations();
       } catch (InterruptedException interruptedException) {
         LOG.error("Thread was interrupted while waiting", interruptedException);
+        failedScriptService.save(
+            ec, "Thread was interrupted while waiting for automation to finish");
         Thread.currentThread().interrupt();
       }
-    }
-
-    LOG.info("Waiting a few seconds before starting automation");
-    try {
-      Thread.sleep(5000); // Wait 5 seconds before starting automation
-    } catch (InterruptedException interruptedException) {
-      LOG.error("Thread was interrupted while waiting", interruptedException);
-      Thread.currentThread().interrupt(); // Restore interrupted status
     }
 
     LOG.info("Starting Automation process for EC");
@@ -266,6 +260,17 @@ public class MerchantService {
     String[] merchantsArray = merchants.split(",");
 
     for (String ec : merchantsArray) {
+      
+      LOG.info("Waiting a few seconds before starting automation");
+      try {
+        Thread.sleep(5000); // Wait 5 seconds before starting automation
+      } catch (InterruptedException interruptedException) {
+        LOG.error("Thread was interrupted while waiting", interruptedException);
+        failedScriptService.save(
+            ec, "Thread was interrupted while waiting for automation to start");
+        Thread.currentThread().interrupt(); // Restore interrupted status
+      }
+
       CompletableFuture.runAsync(() -> runAutomationForSingleMerchant(ec), executor);
     }
   }
