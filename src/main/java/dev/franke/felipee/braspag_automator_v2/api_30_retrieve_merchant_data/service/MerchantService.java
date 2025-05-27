@@ -12,6 +12,7 @@ import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.rep
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.utils.ProcessExecutionAPI30;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -196,6 +197,35 @@ public class MerchantService {
   }
 
   private void runAutomationForSingleMerchant(String ec) {
+    byte currentAutomations = numberOfAutomationsRunning().numberOfAutomations();
+    byte timeout = 5; // Timeout in minutes
+    LocalDateTime startTime = LocalDateTime.now();
+
+    while (currentAutomations > 0) {
+      if (LocalDateTime.now().isAfter(startTime.plusMinutes(timeout))) {
+        LOG.warn("Timeout reached while waiting for automations to finish");
+        failedScriptService.save(ec, "Timeout reached while waiting for automations to finish");
+        return;
+      }
+
+      LOG.info("Waiting for automations to finish. Current count: {}", currentAutomations);
+      try {
+        Thread.sleep(10000); // Wait 10 seconds before checking again
+        currentAutomations = numberOfAutomationsRunning().numberOfAutomations();
+      } catch (InterruptedException interruptedException) {
+        LOG.error("Thread was interrupted while waiting", interruptedException);
+        Thread.currentThread().interrupt();
+      }
+    }
+
+    LOG.info("Waiting a few seconds before starting automation");
+    try {
+      Thread.sleep(5000); // Wait 5 seconds before starting automation
+    } catch (InterruptedException interruptedException) {
+      LOG.error("Thread was interrupted while waiting", interruptedException);
+      Thread.currentThread().interrupt(); // Restore interrupted status
+    }
+
     LOG.info("Starting Automation process for EC");
     Optional<Merchant> result = getAutomationResult(ec);
     result.ifPresent(
@@ -245,7 +275,6 @@ public class MerchantService {
           ScriptLastLineIsBlankException,
           ReadScriptJsonException {
     try {
-      LOG.info("Reading data from file: {}", ec + ".json");
       String lastLine = processExecution.run(ec);
 
       if (lastLine == null)
