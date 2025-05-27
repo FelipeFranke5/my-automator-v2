@@ -1,7 +1,9 @@
 package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.controller;
 
+import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dto.AutomationListResponseBody;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dto.AutomationResult;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dto.MerchantsToEmailInput;
+import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.FailedScriptService;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.MerchantService;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
@@ -20,10 +22,15 @@ public class MerchantController {
 
   private final MerchantService merchantService;
   private final HeaderValidator headerValidator;
+  private final FailedScriptService failedScriptService;
 
-  public MerchantController(MerchantService merchantService, HeaderValidator headerValidator) {
+  public MerchantController(
+      MerchantService merchantService,
+      HeaderValidator headerValidator,
+      FailedScriptService failedScriptService) {
     this.merchantService = merchantService;
     this.headerValidator = headerValidator;
+    this.failedScriptService = failedScriptService;
   }
 
   @PostMapping
@@ -86,7 +93,13 @@ public class MerchantController {
       return ResponseEntity.status(401).build();
     }
 
-    return ResponseEntity.ok(merchantService.listOfMerchants());
+    AutomationListResponseBody responseBody =
+        new AutomationListResponseBody(
+            merchantService.numberOfAutomationsRunning(),
+            merchantService.listOfMerchants(),
+            failedScriptService.findAll());
+
+    return ResponseEntity.ok(responseBody);
   }
 
   @DeleteMapping
