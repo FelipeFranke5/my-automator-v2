@@ -206,7 +206,7 @@ public class MerchantService {
     while (currentAutomations > 0) {
       if (LocalDateTime.now().isAfter(startTime.plusMinutes(timeout))) {
         LOG.warn("Timeout reached while waiting for automations to finish");
-        failedScriptService.save(ec, "Timeout reached while waiting for automations to finish");
+        failedScriptService.save(ec, "Timeout durante execucao");
         return;
       }
 
@@ -230,7 +230,7 @@ public class MerchantService {
       currentAutomations = numberOfAutomationsRunning().numberOfAutomations();
     } catch (InterruptedException interruptedException) {
       LOG.error("Thread was interrupted while waiting", interruptedException);
-      failedScriptService.save(ec, "Thread was interrupted while waiting for automation to finish");
+      failedScriptService.save(ec, "Thread interrompida durante execucao");
       Thread.currentThread().interrupt();
     }
     return currentAutomations;
@@ -281,7 +281,7 @@ public class MerchantService {
       LOG.info("Finished waiting!");
     } catch (InterruptedException interruptedException) {
       LOG.error("Thread was interrupted while waiting", interruptedException);
-      failedScriptService.save(ec, "Thread was interrupted while waiting for automation to start");
+      failedScriptService.save(ec, "Thread interrompida durante execucao");
       Thread.currentThread().interrupt(); // Restore interrupted status
     }
   }
