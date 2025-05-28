@@ -270,53 +270,90 @@ class Automation:
 
 
 
-def main():
-    print("Initializing..")
-    error = False
+def execute_attempt():
+    result_string = ""
+    retry = False
+    finished_with_sucess = False
     automation = Automation()
 
     try:
         automation.login()
         automation.search_ec()
         automation.get_merchant_data()
-        print("Result is in JSON file")
+        result_string = "Result is in JSON file"
+        finished_with_sucess = True
     except TimeoutException:
-        print("Error finding element due to timeout")
-        error = True
+        result_string = "Error finding element due to timeout"
+        retry = True
     except InvalidLogin:
-        print("Invalid credentials")
-        error = True
+        result_string = "Invalid credentials"
+        retry = False
     except EstablishmentNotFound:
-        print("EC not found")
-        error = True
+        result_string = "EC not found"
+        retry = False
     except BraspagInternalServerError:
-        print("Braspag internal error")
-        error = True
+        result_string = "Braspag internal error"
+        retry = True
     except MissingRequiredArgs:
-        print("Missing required arguments")
-        error = True
+        result_string = "Missing required arguments"
+        retry = False
     except InvalidUsernameLength:
-        print("Invalid username length")
-        error = True
+        result_string = "Invalid username length"
+        retry = False
     except InvalidPasswordLength:
-         print("Invalid password length")
-         error = True
+        result_string = "Invalid password length"
+        retry = False
     except InvalidEcLength:
-        print("Invalid ec length")
-        error = True
+        result_string = "Invalid ec length"
+        retry = False
     except InvalidEc:
-        print("Invalid ec")
-        error = True
+        result_string = "Invalid ec"
+        retry = False
     except NoSuchElementException:
-        print("Could not find a element")
-        error = True
+        result_string = "Could not find a element"
+        retry = True
     finally:
         if automation.driver:
-            automation.driver.quit()
-        if error:
+                automation.driver.quit()
+        return (finished_with_sucess, retry, result_string)
+
+
+def main():
+    print("Initializing..")
+    max_attemps = 3
+    current_attempt = 0
+    attempt_result = None
+
+    while current_attempt < max_attemps:
+        attempt_result = execute_attempt()
+        sucess = attempt_result[0]
+        can_retry= attempt_result[1]
+        result_str = attempt_result[2]
+
+        if sucess:
+            print(result_str)
+            sys.exit(0)
+
+        # Assume failure from this point
+        if not can_retry:
+            print(result_str)
             sys.exit(1)
         else:
-            sys.exit(0)
+            # Assume failure, but can retry
+            # Continue loop
+            print(result_str)
+
+        current_attempt += 1
+
+    # If code goes here = max attempts reached
+    if attempt_result is not None:
+        result_str = attempt_result[2]
+        print(result_str)
+        sys.exit(1)
+    else:
+        print("Unexpected error")
+        sys.exit(1)
+
 
 
 if __name__ == "__main__":
