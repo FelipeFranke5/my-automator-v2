@@ -84,12 +84,14 @@ public class MerchantService {
   public AutomationsRunningOutput numberOfAutomationsRunning() {
     byte automations = processExecution.getNumberOfPythonProcesses();
     String message;
-
     if (automations < 0) {
       message = "Erro ao obter o numero de automacoes em execucao";
       return new AutomationsRunningOutput(automations, message);
     }
-
+    if (automations == 0) {
+      message = "Nenhuma automacao sendo executada";
+      return new AutomationsRunningOutput(automations, message);
+    }
     message = "Automacoes em execucao";
     return new AutomationsRunningOutput(automations, message);
   }
@@ -198,7 +200,7 @@ public class MerchantService {
 
   private void runAutomationForSingleMerchant(String ec) {
     byte currentAutomations = numberOfAutomationsRunning().numberOfAutomations();
-    byte timeout = 5; // Timeout in minutes
+    byte timeout = 20; // Timeout in minutes
     LocalDateTime startTime = LocalDateTime.now();
 
     while (currentAutomations > 0) {
@@ -209,19 +211,12 @@ public class MerchantService {
       }
 
       LOG.info("Waiting for automations to finish. Current count: {}", currentAutomations);
-      try {
-        Thread.sleep(10000); // Wait 10 seconds before checking again
-        currentAutomations = numberOfAutomationsRunning().numberOfAutomations();
-      } catch (InterruptedException interruptedException) {
-        LOG.error("Thread was interrupted while waiting", interruptedException);
-        failedScriptService.save(
-            ec, "Thread was interrupted while waiting for automation to finish");
-        Thread.currentThread().interrupt();
-      }
+      currentAutomations = waitForAutomationCompletion(ec, currentAutomations);
     }
 
     LOG.info("Starting Automation process for EC");
     Optional<Merchant> result = getAutomationResult(ec);
+    
     result.ifPresent(
         res -> {
           LOG.info("Automation Result is present. Saving to database");
@@ -229,22 +224,37 @@ public class MerchantService {
         });
   }
 
+  private byte waitForAutomationCompletion(String ec, byte currentAutomations) {
+    try {
+      Thread.sleep(10000); // Wait 10 seconds before checking again
+      currentAutomations = numberOfAutomationsRunning().numberOfAutomations();
+    } catch (InterruptedException interruptedException) {
+      LOG.error("Thread was interrupted while waiting", interruptedException);
+      failedScriptService.save(ec, "Thread was interrupted while waiting for automation to finish");
+      Thread.currentThread().interrupt();
+    }
+    return currentAutomations;
+  }
+
   private Optional<Merchant> getAutomationResult(String ec) {
     LOG.info("Attempting to retrieve data for this merchant");
-    Merchant merchant = null;
-
     if (ec == null || ec.isBlank() || ec.length() != 10) {
       LOG.warn("Not executing automation, because EC is not valid");
       failedScriptService.save(ec, "O numero do EC nao e valido");
       return Optional.empty();
     }
+    return fetchMerchantInfo(ec);
+  }
 
+  private Optional<Merchant> fetchMerchantInfo(String ec) {
+    Merchant merchant;
     try {
       merchant = getMerchantDataFromFile(ec);
       LOG.info("Data was retrieved");
       return Optional.of(merchant);
     } catch (ScriptLastLineIsBlankException
         | ReadScriptJsonException
+        | ScriptLastLineIsStdErrorException
         | ScriptLastLineIsNullException execException) {
       LOG.error("There was a error during execution", execException);
       String errorMessage = "Erro durante execucao do script: " + execException.getMessage();
@@ -258,20 +268,21 @@ public class MerchantService {
   private void runAutomationForMultipleMerchants(String merchants) {
     LOG.info("Multiple EC's identified");
     String[] merchantsArray = merchants.split(",");
-
     for (String ec : merchantsArray) {
-      
-      LOG.info("Waiting a few seconds before starting automation");
-      try {
-        Thread.sleep(5000); // Wait 5 seconds before starting automation
-      } catch (InterruptedException interruptedException) {
-        LOG.error("Thread was interrupted while waiting", interruptedException);
-        failedScriptService.save(
-            ec, "Thread was interrupted while waiting for automation to start");
-        Thread.currentThread().interrupt(); // Restore interrupted status
-      }
-
+      briefDelayForAutomation(ec);
       CompletableFuture.runAsync(() -> runAutomationForSingleMerchant(ec), executor);
+    }
+  }
+
+  private void briefDelayForAutomation(String ec) {
+    LOG.info("Waiting a few seconds before starting automation");
+    try {
+      Thread.sleep(5000); // Wait 5 seconds before starting automation
+      LOG.info("Finished waiting!");
+    } catch (InterruptedException interruptedException) {
+      LOG.error("Thread was interrupted while waiting", interruptedException);
+      failedScriptService.save(ec, "Thread was interrupted while waiting for automation to start");
+      Thread.currentThread().interrupt(); // Restore interrupted status
     }
   }
 
@@ -280,16 +291,7 @@ public class MerchantService {
           ScriptLastLineIsBlankException,
           ReadScriptJsonException {
     try {
-      String lastLine = processExecution.run(ec);
-
-      if (lastLine == null)
-        throw new ScriptLastLineIsNullException("Script Failed - Last Line Null");
-      if (lastLine.isBlank())
-        throw new ScriptLastLineIsBlankException("Script Failed - Last Line Blank");
-      if (!lastLine.equalsIgnoreCase("Result is in JSON file"))
-        throw new ScriptLastLineIsStdErrorException("Script Failed with std error - " + lastLine);
-
-      LOG.info("Last line is valid, proceeding to read JSON file");
+      ensureLastLineValid(ec);
       return objectMapper.readValue(new File(ec + ".json"), Merchant.class);
     } catch (IOException ioException) {
       String message =
@@ -299,5 +301,19 @@ public class MerchantService {
               + ioException.getMessage();
       throw new ReadScriptJsonException(message);
     }
+  }
+
+  private void ensureLastLineValid(String ec) throws IOException {
+    String lastLine = processExecution.run(ec);
+    if (lastLine == null) {
+      throw new ScriptLastLineIsNullException("Ultima linha do script e nula");
+    }
+    if (lastLine.isBlank()) {
+      throw new ScriptLastLineIsBlankException("Ultima linha do script nao possui conteudo");
+    }
+    if (!lastLine.equalsIgnoreCase("Result is in JSON file")) {
+      throw new ScriptLastLineIsStdErrorException("erro std na execucao: " + lastLine);
+    }
+    LOG.info("Last line is valid, proceeding to read JSON file");
   }
 }
