@@ -216,7 +216,7 @@ public class MerchantService {
 
     LOG.info("Starting Automation process for EC");
     Optional<Merchant> result = getAutomationResult(ec);
-    
+
     result.ifPresent(
         res -> {
           LOG.info("Automation Result is present. Saving to database");
