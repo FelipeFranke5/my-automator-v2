@@ -21,12 +21,12 @@ public class CheckoutFailedAutomationService {
 
   public void save(final String ecNumber, final String message) {
     try {
-      LOG.info("Attempting to save");
+      LOG.info("[{}] Attempting to save", ecNumber);
       failedAutomationRepository.save(new CheckoutFailedAutomation(ecNumber, message));
-      LOG.info("Saved");
+      LOG.info("[{}] Saved", ecNumber);
     } catch (final Exception exception) {
-      LOG.warn("There was an error while trying to save");
-      LOG.error("Error while trying to save", exception);
+      LOG.warn("[{}] There was an error while trying to save", ecNumber);
+      LOG.error("[{}] Error while trying to save", ecNumber, exception);
     }
   }
 

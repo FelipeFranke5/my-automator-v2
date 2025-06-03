@@ -39,11 +39,11 @@ public class CheckoutFileHandler {
     }
 
     try {
-      LOG.info("Attempting to read the JSON file");
+      LOG.info("[{}] Attempting to read the JSON file", ec);
       return Optional.of(
           objectMapper.readValue(new File(ec + ".json"), CheckoutCompletedAutomation.class));
     } catch (final IOException ioException) {
-      LOG.error("There was an error while attempting to read the JSON file", ioException);
+      LOG.error("[{}] There was an error while attempting to read the JSON file", ec, ioException);
       return Optional.empty();
     }
   }
@@ -55,13 +55,9 @@ public class CheckoutFileHandler {
     }
 
     try {
-      LOG.info("Attempting to delete the JSON file");
-      final Path filePath = Path.of(ec + ".json");
-      LOG.info(
-          "Does the file exist? {}",
-          new File(filePath.toString()).exists() ? "Yes, it does" : "No, it does not");
+      LOG.info("[{}] Attempting to delete the JSON file", ec);
       final boolean result = Files.deleteIfExists(Path.of(ec + ".json"));
-      LOG.info("Result of deletion: {}", result);
+      LOG.info("[{}] Result of deletion: {}", ec, result);
     } catch (final IOException ioException) {
       LOG.error("There was an error while attempting to delete the JSON file", ioException);
     }
