@@ -97,6 +97,7 @@ public class CheckoutRunner {
                       final var data = fileHandler.getMerchantDataFromFile(ecNumber);
                       data.ifPresent(automationService::save);
                     }
+                    fileHandler.deleteJsonFileAfterAutomation(ecNumber);
                   },
                   executor);
             });
@@ -120,8 +121,6 @@ public class CheckoutRunner {
       final String errorMessage = "Erro: " + ioException.getMessage();
       failedAutomationService.save(ecNumber, errorMessage);
       finalResult = -1;
-    } finally {
-      fileHandler.deleteJsonFileAfterAutomation(ecNumber);
     }
 
     return finalResult;
