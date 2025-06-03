@@ -63,7 +63,6 @@ public class CheckoutRunner {
   }
 
   public void run(final String[] merchantEcNumbers) {
-    LOG.info("Starting CheckoutRunner service...");
     CompletableFuture.runAsync(
         () -> {
           validateAndRun(merchantEcNumbers);
@@ -117,7 +116,7 @@ public class CheckoutRunner {
         finalResult = -1;
       }
     } catch (final IOException ioException) {
-      LOG.error("Error while running process for EC number: {}", ecNumber, ioException);
+      LOG.error("[{}] Error while running process for EC number", ecNumber, ioException);
       final String errorMessage = "Erro: " + ioException.getMessage();
       failedAutomationService.save(ecNumber, errorMessage);
       finalResult = -1;

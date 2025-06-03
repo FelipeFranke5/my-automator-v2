@@ -15,4 +15,6 @@ COPY python python
 COPY target/*.jar target/app.jar
 COPY prod.env target/prod.env
 
+RUN python3 -m venv .venv && source .venv/bin/activate && pip install selenium
+
 ENTRYPOINT ["java", "-jar", "target/app.jar"]
