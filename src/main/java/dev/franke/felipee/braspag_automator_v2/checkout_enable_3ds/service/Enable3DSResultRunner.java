@@ -1,9 +1,7 @@
 package dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.service;
 
-import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dto.AutomationsRunningOutput;
 import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.service.utils.ProcessExecutionEnable3DS;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,10 +13,8 @@ import org.springframework.stereotype.Service;
 public class Enable3DSResultRunner {
 
   private static final Logger LOG = LoggerFactory.getLogger(Enable3DSResultRunner.class);
-  private static final ExecutorService executor = Executors.newCachedThreadPool();
+  private static final ExecutorService executor = Executors.newFixedThreadPool(2);
 
-  private static final String INTERRUPTED_THREAD_MESSAGE =
-      "Thread interrompida e falha na execucao";
   private static final String SUCESS_MESSAGE = "3DS Habilitado";
   private static final String GENERIC_ERROR_MESSAGE = "Falha na Execucao";
   private static final String INVALID_CREDENTIALS_MESSAGE = "Credenciais Invalidas";
@@ -27,7 +23,6 @@ public class Enable3DSResultRunner {
   private static final String INVALID_PARAMETERS_MESSAGE = "Parametros Invalidos";
   private static final String MERCHANT_IS_BLOCKED_MESSAGE = "Loja Bloqueada";
   private static final String ALREADY_ENABLED_MESSAGE = "3DS ja esta habilitado";
-  private static final String TIMEOUT_MESSAGE = "Timeout na espera para executar";
 
   private final Enable3DSResultService enable3dsResultService;
   private final CheckoutMerchantValidator checkoutMerchantValidator;
@@ -40,21 +35,6 @@ public class Enable3DSResultRunner {
     this.enable3dsResultService = enable3dsResultService;
     this.checkoutMerchantValidator = checkoutMerchantValidator;
     this.processExecutionEnable3DS = processExecutionEnable3DS;
-  }
-
-  public AutomationsRunningOutput numberOfAutomationsRunning() {
-    final byte automations = processExecutionEnable3DS.getNumberOfPythonProcesses();
-    String message;
-    if (automations < 0) {
-      message = "Erro ao obter o numero de automacoes em execucao";
-      return new AutomationsRunningOutput(automations, message);
-    }
-    if (automations == 0) {
-      message = "Nenhuma automacao sendo executada";
-      return new AutomationsRunningOutput(automations, message);
-    }
-    message = "Automacoes em execucao";
-    return new AutomationsRunningOutput(automations, message);
   }
 
   public void run(final String[] ecs) {
@@ -70,7 +50,7 @@ public class Enable3DSResultRunner {
     CompletableFuture.runAsync(
         () -> {
           for (final String ec : ecs) {
-            briefDelayForAutomation(ec);
+
             CompletableFuture.runAsync(
                 () -> {
                   singleEcAutomation(ec);
@@ -84,49 +64,8 @@ public class Enable3DSResultRunner {
   }
 
   private void singleEcAutomation(final String ec) {
-    byte currentAutomations = numberOfAutomationsRunning().numberOfAutomations();
-    final byte timeout = 60; // Timeout in minutes - For checkout we need more ..
-    final LocalDateTime startTime = LocalDateTime.now();
-
-    while (currentAutomations > 0) {
-      if (LocalDateTime.now().isAfter(startTime.plusMinutes(timeout))) {
-        LOG.warn("[{}] Timeout reached while waiting for automations to finish", ec);
-        enable3dsResultService.save(ec, TIMEOUT_MESSAGE);
-        return;
-      }
-
-      LOG.info("[{}] Waiting for automations to finish. Current count: {}", ec, currentAutomations);
-      currentAutomations = waitForAutomationCompletion(ec, currentAutomations);
-    }
-
-    LOG.info("[{}] Starting Automation process for EC", ec);
     final String message = getResultMessageFromExecutionLastLine(getLastLine(ec));
     enable3dsResultService.save(ec, message);
-  }
-
-  private byte waitForAutomationCompletion(final String ec, byte currentAutomations) {
-    try {
-      Thread.sleep(10000); // Wait 10 seconds before checking again
-      currentAutomations = numberOfAutomationsRunning().numberOfAutomations();
-    } catch (final InterruptedException interruptedException) {
-      LOG.error("[{}] Thread was interrupted while waiting", ec, interruptedException);
-      enable3dsResultService.save(ec, INTERRUPTED_THREAD_MESSAGE);
-      Thread.currentThread().interrupt();
-    }
-    return currentAutomations;
-  }
-
-  private void briefDelayForAutomation(final String ec) {
-    LOG.info("[{}] Waiting a few seconds before starting automation", ec);
-
-    try {
-      Thread.sleep(5000); // Wait 5 seconds before starting automation
-      LOG.info("[{}] Finished waiting!", ec);
-    } catch (final InterruptedException interruptedException) {
-      LOG.error("Thread was interrupted while waiting", interruptedException);
-      enable3dsResultService.save(ec, INTERRUPTED_THREAD_MESSAGE);
-      Thread.currentThread().interrupt(); // Restore interrupted status
-    }
   }
 
   private String getResultMessageFromExecutionLastLine(final byte result) {
