@@ -181,35 +181,35 @@ public class CheckoutFileHandler {
                 createdAtCell.setCellValue(merchant.testModeEnabled() ? "Sim" : "Não");
                 createdAtCell.setCellStyle(bodyStyle);
 
-                final Cell pixEnabledCell = newRow.createCell(7);
+                final Cell pixEnabledCell = newRow.createCell(6);
                 pixEnabledCell.setCellValue(merchant.internationalPaymentEnabled() ? "Sim" : "Não");
                 pixEnabledCell.setCellStyle(bodyStyle);
 
-                final Cell antifraudEnabledCell = newRow.createCell(8);
+                final Cell antifraudEnabledCell = newRow.createCell(7);
                 antifraudEnabledCell.setCellValue(merchant.notificationUrl());
                 antifraudEnabledCell.setCellStyle(bodyStyle);
 
-                final Cell tokenizationEnabledCell = newRow.createCell(9);
+                final Cell tokenizationEnabledCell = newRow.createCell(8);
                 tokenizationEnabledCell.setCellValue(merchant.returnUrl());
                 tokenizationEnabledCell.setCellStyle(bodyStyle);
 
-                final Cell velocityEnabledCell = newRow.createCell(10);
+                final Cell velocityEnabledCell = newRow.createCell(9);
                 velocityEnabledCell.setCellValue(merchant.statusChangeUrl());
                 velocityEnabledCell.setCellStyle(bodyStyle);
 
-                final Cell recurrentEnabledCell = newRow.createCell(11);
+                final Cell recurrentEnabledCell = newRow.createCell(10);
                 recurrentEnabledCell.setCellValue(merchant.threeDSEnabled() ? "Sim" : "Não");
                 recurrentEnabledCell.setCellStyle(bodyStyle);
 
-                final Cell zeroDollarEnabledCell = newRow.createCell(12);
+                final Cell zeroDollarEnabledCell = newRow.createCell(11);
                 zeroDollarEnabledCell.setCellValue(merchant.amexMid());
                 zeroDollarEnabledCell.setCellStyle(bodyStyle);
 
-                final Cell binQueryEnabledCell = newRow.createCell(13);
+                final Cell binQueryEnabledCell = newRow.createCell(12);
                 binQueryEnabledCell.setCellValue(merchant.facialAuthEnabled() ? "Sim" : "Não");
                 binQueryEnabledCell.setCellStyle(bodyStyle);
 
-                final Cell selectiveAuthEnabledCell = newRow.createCell(14);
+                final Cell selectiveAuthEnabledCell = newRow.createCell(13);
                 selectiveAuthEnabledCell.setCellValue(merchant.recordTimestamp());
                 selectiveAuthEnabledCell.setCellStyle(bodyStyle);
 
