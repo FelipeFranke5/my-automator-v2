@@ -12,7 +12,6 @@ import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.rep
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.utils.ProcessExecutionAPI30;
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +27,7 @@ import org.springframework.stereotype.Service;
 public class MerchantService {
 
   private static final Logger LOG = LoggerFactory.getLogger(MerchantService.class);
-  private static final ExecutorService executor = Executors.newCachedThreadPool();
+  private static final ExecutorService executor = Executors.newFixedThreadPool(2);
 
   @Value("${braspag.prod.login}")
   private String login;
@@ -119,11 +118,15 @@ public class MerchantService {
     LOG.info("And then send Email with Excel file");
     LOG.info("Results count: {}", merchants.size());
 
-    LOG.info("Start async task");
+    handleExcelEmailTask(emailAddress, merchants);
+
+    LOG.info("Async task already started. I am free now to return");
+    return 0;
+  }
+
+  private void handleExcelEmailTask(String emailAddress, List<Merchant> merchants) {
     CompletableFuture.runAsync(
         () -> {
-
-          // Start - Async Task
           Optional<byte[]> optionalExcelBytes = writeToExcel(merchants);
 
           optionalExcelBytes.ifPresentOrElse(
@@ -137,13 +140,8 @@ public class MerchantService {
                 LOG.warn("Sending email to inform error");
                 sendEmail(emailAddress);
               });
-
-          // End - Async Task
         },
         executor);
-
-    LOG.info("Async task already started. I am free now to return");
-    return 0;
   }
 
   public List<OutputMerchant> listOfMerchants() {
@@ -184,36 +182,26 @@ public class MerchantService {
 
   // This should be called second
   public void runAutomation(String merchants) {
-    LOG.info("Starting Automation!");
+    CompletableFuture.runAsync(
+        () -> {
+          LOG.info("Starting Automation!");
 
-    if (!(inputIsValid(merchants))) {
-      LOG.warn("Input is not valid. Returning right now");
-      return;
-    }
+          if (!(inputIsValid(merchants))) {
+            LOG.warn("Input is not valid. Returning right now");
+            failedScriptService.save("INVALIDO", "ECs invalidos");
+            return;
+          }
 
-    if (merchants.length() > 10) {
-      runAutomationForMultipleMerchants(merchants);
-    } else {
-      runAutomationForSingleMerchant(merchants);
-    }
+          if (merchants.length() > 10) {
+            runAutomationForMultipleMerchants(merchants);
+          } else {
+            runAutomationForSingleMerchant(merchants);
+          }
+        },
+        executor);
   }
 
   private void runAutomationForSingleMerchant(String ec) {
-    byte currentAutomations = numberOfAutomationsRunning().numberOfAutomations();
-    byte timeout = 20; // Timeout in minutes
-    LocalDateTime startTime = LocalDateTime.now();
-
-    while (currentAutomations > 0) {
-      if (LocalDateTime.now().isAfter(startTime.plusMinutes(timeout))) {
-        LOG.warn("Timeout reached while waiting for automations to finish");
-        failedScriptService.save(ec, "Timeout durante execucao");
-        return;
-      }
-
-      LOG.info("Waiting for automations to finish. Current count: {}", currentAutomations);
-      currentAutomations = waitForAutomationCompletion(ec, currentAutomations);
-    }
-
     LOG.info("Starting Automation process for EC");
     Optional<Merchant> result = getAutomationResult(ec);
 
@@ -222,18 +210,6 @@ public class MerchantService {
           LOG.info("Automation Result is present. Saving to database");
           saveMerchantToDatabase(res);
         });
-  }
-
-  private byte waitForAutomationCompletion(String ec, byte currentAutomations) {
-    try {
-      Thread.sleep(10000); // Wait 10 seconds before checking again
-      currentAutomations = numberOfAutomationsRunning().numberOfAutomations();
-    } catch (InterruptedException interruptedException) {
-      LOG.error("Thread was interrupted while waiting", interruptedException);
-      failedScriptService.save(ec, "Thread interrompida durante execucao");
-      Thread.currentThread().interrupt();
-    }
-    return currentAutomations;
   }
 
   private Optional<Merchant> getAutomationResult(String ec) {
@@ -261,7 +237,7 @@ public class MerchantService {
       failedScriptService.save(ec, errorMessage);
       return Optional.empty();
     } finally {
-      CompletableFuture.runAsync(() -> fileHandler.deleteJsonFileAfterAutomation(ec), executor);
+      fileHandler.deleteJsonFileAfterAutomation(ec);
     }
   }
 
@@ -269,20 +245,7 @@ public class MerchantService {
     LOG.info("Multiple EC's identified");
     String[] merchantsArray = merchants.split(",");
     for (String ec : merchantsArray) {
-      briefDelayForAutomation(ec);
       CompletableFuture.runAsync(() -> runAutomationForSingleMerchant(ec), executor);
-    }
-  }
-
-  private void briefDelayForAutomation(String ec) {
-    LOG.info("Waiting a few seconds before starting automation");
-    try {
-      Thread.sleep(5000); // Wait 5 seconds before starting automation
-      LOG.info("Finished waiting!");
-    } catch (InterruptedException interruptedException) {
-      LOG.error("Thread was interrupted while waiting", interruptedException);
-      failedScriptService.save(ec, "Thread interrompida durante execucao");
-      Thread.currentThread().interrupt(); // Restore interrupted status
     }
   }
 
