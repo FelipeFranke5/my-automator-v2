@@ -25,14 +25,17 @@ public class Enable3DSResultRunner {
     private static final String ALREADY_ENABLED_MESSAGE = "3DS ja esta habilitado";
 
     private final Enable3DSResultService enable3dsResultService;
+    private final Enable3DSFailService enable3DSFailService;
     private final CheckoutMerchantValidator checkoutMerchantValidator;
     private final ProcessExecutionEnable3DS processExecutionEnable3DS;
 
     public Enable3DSResultRunner(
-            final Enable3DSResultService enable3dsResultService,
-            final CheckoutMerchantValidator checkoutMerchantValidator,
-            final ProcessExecutionEnable3DS processExecutionEnable3DS) {
+            Enable3DSResultService enable3dsResultService,
+            Enable3DSFailService enable3DSFailService,
+            CheckoutMerchantValidator checkoutMerchantValidator,
+            ProcessExecutionEnable3DS processExecutionEnable3DS) {
         this.enable3dsResultService = enable3dsResultService;
+        this.enable3DSFailService = enable3DSFailService;
         this.checkoutMerchantValidator = checkoutMerchantValidator;
         this.processExecutionEnable3DS = processExecutionEnable3DS;
     }
@@ -52,9 +55,7 @@ public class Enable3DSResultRunner {
                     for (final String ec : ecs) {
 
                         CompletableFuture.runAsync(
-                                () -> {
-                                    singleEcAutomation(ec);
-                                },
+                                () -> singleEcAutomation(ec),
                                 executor);
                     }
                 },
@@ -65,7 +66,12 @@ public class Enable3DSResultRunner {
 
     private void singleEcAutomation(final String ec) {
         final String message = getResultMessageFromExecutionLastLine(getLastLine(ec));
-        enable3dsResultService.save(ec, message);
+
+        if (message.equals(SUCESS_MESSAGE) || message.equals(ALREADY_ENABLED_MESSAGE)) {
+            enable3dsResultService.save(ec, message);
+        } else {
+            enable3DSFailService.save(ec, message);
+        }
     }
 
     private String getResultMessageFromExecutionLastLine(final byte result) {
@@ -77,7 +83,6 @@ public class Enable3DSResultRunner {
             case 4 -> INVALID_PARAMETERS_MESSAGE;
             case 6 -> MERCHANT_IS_BLOCKED_MESSAGE;
             case 8 -> ALREADY_ENABLED_MESSAGE;
-            case 5, 7, 9, 10 -> GENERIC_ERROR_MESSAGE;
             default -> GENERIC_ERROR_MESSAGE;
         };
     }
