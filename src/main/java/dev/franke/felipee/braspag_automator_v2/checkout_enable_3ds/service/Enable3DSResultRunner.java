@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 public class Enable3DSResultRunner {
 
     private static final Logger LOG = LoggerFactory.getLogger(Enable3DSResultRunner.class);
-    private static final ExecutorService executor = Executors.newFixedThreadPool(2);
+    private static final ExecutorService executor = Executors.newFixedThreadPool(4);
 
     private static final String SUCESS_MESSAGE = "3DS Habilitado";
     private static final String GENERIC_ERROR_MESSAGE = "Falha na Execucao";

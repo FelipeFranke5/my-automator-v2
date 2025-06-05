@@ -27,7 +27,7 @@ import org.springframework.stereotype.Service;
 public class MerchantService {
 
     private static final Logger LOG = LoggerFactory.getLogger(MerchantService.class);
-    private static final ExecutorService executor = Executors.newFixedThreadPool(2);
+    private static final ExecutorService executor = Executors.newFixedThreadPool(4);
 
     @Value("${braspag.prod.login}")
     private String login;
