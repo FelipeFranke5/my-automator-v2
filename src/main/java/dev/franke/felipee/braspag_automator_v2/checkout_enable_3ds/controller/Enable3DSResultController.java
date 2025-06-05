@@ -6,12 +6,7 @@ import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.service.Enabl
 import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.service.Enable3DSResultService;
 import java.time.LocalDateTime;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/checkout/enable-3ds")
@@ -39,8 +34,7 @@ public class Enable3DSResultController {
     @PostMapping
     public ResponseEntity<?> executeAutomation(
             @RequestBody AutomationRequestBody requestBody,
-            @RequestHeader(name = "Authorization", required = true) String authorizationHeader) {
-
+            @RequestHeader(name = "Authorization") String authorizationHeader) {
         if (!headerValidator.headerIsValid(authorizationHeader)) {
             return ResponseEntity.status(401).build();
         }
@@ -57,14 +51,29 @@ public class Enable3DSResultController {
         return ResponseEntity.status(201).body(validEcResponseBody);
     }
 
-    @GetMapping
+    @GetMapping("/text")
     public ResponseEntity<?> getResults(
-            @RequestHeader(name = "Authorization", required = true) String authorizationHeader) {
-
+            @RequestHeader(name = "Authorization") String authorizationHeader) {
         if (!headerValidator.headerIsValid(authorizationHeader)) {
             return ResponseEntity.status(401).build();
         }
+        return ResponseEntity.ok(enable3dsResultService.resultsInString());
+    }
 
-        return ResponseEntity.ok().body(enable3dsResultService.resultsInString());
+    @GetMapping("/json")
+    public ResponseEntity<?> getResultsJson(@RequestHeader(name = "Authorization") String authorizationHeader) {
+        if (!headerValidator.headerIsValid(authorizationHeader)) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(enable3dsResultService.resultsJson());
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAll(@RequestHeader(name = "Authorization") String authorizationHeader) {
+        if (!headerValidator.headerIsValid(authorizationHeader)) {
+            return ResponseEntity.status(401).build();
+        }
+        enable3dsResultService.deleteAll();
+        return ResponseEntity.noContent().build();
     }
 }
