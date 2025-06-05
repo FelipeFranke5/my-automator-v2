@@ -12,62 +12,52 @@ import org.springframework.stereotype.Service;
 @Service
 public class CheckoutCompletedAutomationService {
 
-  private static final Logger LOG =
-      LoggerFactory.getLogger(CheckoutCompletedAutomationService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CheckoutCompletedAutomationService.class);
 
-  private final CheckoutCompletedAutomationRepository automationRepository;
+    private final CheckoutCompletedAutomationRepository automationRepository;
 
-  public CheckoutCompletedAutomationService(
-      final CheckoutCompletedAutomationRepository automationRepository) {
-    this.automationRepository = automationRepository;
-  }
-
-  public void save(final CheckoutCompletedAutomation automation) {
-    try {
-      LOG.info("Attempting to save result to DB");
-      automationRepository.save(automation);
-    } catch (final Exception exception) {
-      LOG.error("Could not save result to DB", exception);
+    public CheckoutCompletedAutomationService(final CheckoutCompletedAutomationRepository automationRepository) {
+        this.automationRepository = automationRepository;
     }
-  }
 
-  public List<CompletedAutomationOutputForExcel> outputForExcel() {
-    LOG.info("Output for Excel called");
-    final List<CheckoutCompletedAutomation> originalList = automationRepository.findAll();
-    final List<CompletedAutomationOutputForExcel> modifiedList =
-        originalList.stream()
-            .map(
-                original -> {
-                  return new CompletedAutomationOutputForExcel(
-                      original.getRecordId(),
-                      original.getEc(),
-                      original.getAlias(),
-                      original.getName(),
-                      original.isBlocked(),
-                      original.isTestModeEnabled(),
-                      original.isInternationalPaymentEnabled(),
-                      original.getNotificationUrl(),
-                      original.getReturnUrl(),
-                      original.getStatusChangeUrl(),
-                      original.isThreeDSEnabled(),
-                      original.getAmexMid(),
-                      original.isFacialAuthEnabled(),
-                      original.getRecordTimestamp());
-                })
-            .toList();
-    return modifiedList;
-  }
+    public void save(final CheckoutCompletedAutomation automation) {
+        try {
+            LOG.info("Attempting to save result to DB");
+            automationRepository.save(automation);
+        } catch (final Exception exception) {
+            LOG.error("Could not save result to DB", exception);
+        }
+    }
 
-  public List<CompletedAutomationOutput> outputForJson() {
-    LOG.info("Output for Json called");
-    final List<CheckoutCompletedAutomation> originalList = automationRepository.findAll();
-    final List<CompletedAutomationOutput> modifiedList =
-        originalList.stream()
-            .map(
-                original -> {
-                  return new CompletedAutomationOutput(original.getEc(), original.isBlocked());
+    public List<CompletedAutomationOutputForExcel> outputForExcel() {
+        LOG.info("Output for Excel called");
+        final List<CheckoutCompletedAutomation> originalList = automationRepository.findAll();
+        return originalList.stream()
+                .map(original -> new CompletedAutomationOutputForExcel(
+                        original.getRecordId(),
+                        original.getEc(),
+                        original.getAlias(),
+                        original.getName(),
+                        original.isBlocked(),
+                        original.isTestModeEnabled(),
+                        original.isInternationalPaymentEnabled(),
+                        original.getNotificationUrl(),
+                        original.getReturnUrl(),
+                        original.getStatusChangeUrl(),
+                        original.isThreeDSEnabled(),
+                        original.getAmexMid(),
+                        original.isFacialAuthEnabled(),
+                        original.getRecordTimestamp()))
+                .toList();
+    }
+
+    public List<CompletedAutomationOutput> outputForJson() {
+        LOG.info("Output for Json called");
+        final List<CheckoutCompletedAutomation> originalList = automationRepository.findAll();
+        return originalList.stream()
+                .map(original -> {
+                    return new CompletedAutomationOutput(original.getEc(), original.isBlocked());
                 })
-            .toList();
-    return modifiedList;
-  }
+                .toList();
+    }
 }

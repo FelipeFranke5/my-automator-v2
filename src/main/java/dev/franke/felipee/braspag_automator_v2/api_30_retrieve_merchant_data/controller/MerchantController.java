@@ -20,104 +20,100 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/retrieve-merchant")
 public class MerchantController {
 
-  private final MerchantService merchantService;
-  private final HeaderValidator headerValidator;
-  private final FailedScriptService failedScriptService;
+    private final MerchantService merchantService;
+    private final HeaderValidator headerValidator;
+    private final FailedScriptService failedScriptService;
 
-  public MerchantController(
-      MerchantService merchantService,
-      HeaderValidator headerValidator,
-      FailedScriptService failedScriptService) {
-    this.merchantService = merchantService;
-    this.headerValidator = headerValidator;
-    this.failedScriptService = failedScriptService;
-  }
-
-  @PostMapping
-  public ResponseEntity<?> index(
-      @RequestBody String merchants,
-      @RequestHeader(name = "Authorization", required = true) String authorizationHeader) {
-
-    if (!headerValidator.headerIsValid(authorizationHeader)) {
-      return ResponseEntity.status(401).build();
+    public MerchantController(
+            MerchantService merchantService, HeaderValidator headerValidator, FailedScriptService failedScriptService) {
+        this.merchantService = merchantService;
+        this.headerValidator = headerValidator;
+        this.failedScriptService = failedScriptService;
     }
 
-    AutomationBodyResponse bodyResponse;
+    @PostMapping
+    public ResponseEntity<?> index(
+            @RequestBody String merchants,
+            @RequestHeader(name = "Authorization", required = true) String authorizationHeader) {
 
-    if (merchantService.inputIsValid(merchants)) {
-      runAutomation(merchants);
-      bodyResponse = new AutomationBodyResponse(LocalDateTime.now(), true);
-    } else {
-      bodyResponse = new AutomationBodyResponse(LocalDateTime.now(), false);
+        if (!headerValidator.headerIsValid(authorizationHeader)) {
+            return ResponseEntity.status(401).build();
+        }
+
+        AutomationBodyResponse bodyResponse;
+
+        if (merchantService.inputIsValid(merchants)) {
+            runAutomation(merchants);
+            bodyResponse = new AutomationBodyResponse(LocalDateTime.now(), true);
+        } else {
+            bodyResponse = new AutomationBodyResponse(LocalDateTime.now(), false);
+        }
+
+        return ResponseEntity.status(201).body(bodyResponse);
     }
 
-    return ResponseEntity.status(201).body(bodyResponse);
-  }
+    @GetMapping("/email")
+    public ResponseEntity<?> getMerchantsToEmail(
+            @RequestHeader(name = "Authorization", required = true) String authorizationHeader,
+            @RequestBody MerchantsToEmailInput input) {
 
-  @GetMapping("/email")
-  public ResponseEntity<?> getMerchantsToEmail(
-      @RequestHeader(name = "Authorization", required = true) String authorizationHeader,
-      @RequestBody MerchantsToEmailInput input) {
+        if (!headerValidator.headerIsValid(authorizationHeader)) {
+            return ResponseEntity.status(401).build();
+        }
 
-    if (!headerValidator.headerIsValid(authorizationHeader)) {
-      return ResponseEntity.status(401).build();
+        if (input == null) {
+            return ResponseEntity.status(400).body("Email is required");
+        }
+
+        byte automationResult = merchantService.sendEmailWithExcelResults(input.email());
+        AutomationResult result;
+
+        switch (automationResult) {
+            case 2:
+                result = new AutomationResult("No results to send");
+                return ResponseEntity.status(404).body(result);
+
+            case 1:
+                result = new AutomationResult("Invalid Email");
+                return ResponseEntity.status(400).body(result);
+
+            default:
+                result = new AutomationResult("OK");
+                return ResponseEntity.status(200).body(result);
+        }
     }
 
-    if (input == null) {
-      return ResponseEntity.status(400).body("Email is required");
+    @GetMapping
+    public ResponseEntity<?> getMerchants(
+            @RequestHeader(name = "Authorization", required = true) String authorizationHeader) {
+
+        if (!headerValidator.headerIsValid(authorizationHeader)) {
+            return ResponseEntity.status(401).build();
+        }
+
+        AutomationListResponseBody responseBody = new AutomationListResponseBody(
+                merchantService.numberOfAutomationsRunning(),
+                merchantService.listOfMerchants(),
+                failedScriptService.findAll());
+
+        return ResponseEntity.ok(responseBody);
     }
 
-    byte automationResult = merchantService.sendEmailWithExcelResults(input.email());
-    AutomationResult result;
+    @DeleteMapping
+    public ResponseEntity<?> deleteRecords(
+            @RequestHeader(name = "Authorization", required = true) String authorizationHeader) {
 
-    switch (automationResult) {
-      case 2:
-        result = new AutomationResult("No results to send");
-        return ResponseEntity.status(404).body(result);
+        if (!headerValidator.headerIsValid(authorizationHeader)) {
+            return ResponseEntity.status(401).build();
+        }
 
-      case 1:
-        result = new AutomationResult("Invalid Email");
-        return ResponseEntity.status(400).body(result);
-
-      default:
-        result = new AutomationResult("OK");
-        return ResponseEntity.status(200).body(result);
-    }
-  }
-
-  @GetMapping
-  public ResponseEntity<?> getMerchants(
-      @RequestHeader(name = "Authorization", required = true) String authorizationHeader) {
-
-    if (!headerValidator.headerIsValid(authorizationHeader)) {
-      return ResponseEntity.status(401).build();
+        merchantService.clearAllMerchants();
+        return ResponseEntity.ok().build();
     }
 
-    AutomationListResponseBody responseBody =
-        new AutomationListResponseBody(
-            merchantService.numberOfAutomationsRunning(),
-            merchantService.listOfMerchants(),
-            failedScriptService.findAll());
-
-    return ResponseEntity.ok(responseBody);
-  }
-
-  @DeleteMapping
-  public ResponseEntity<?> deleteRecords(
-      @RequestHeader(name = "Authorization", required = true) String authorizationHeader) {
-
-    if (!headerValidator.headerIsValid(authorizationHeader)) {
-      return ResponseEntity.status(401).build();
-    }
-
-    merchantService.clearAllMerchants();
-    return ResponseEntity.ok().build();
-  }
-
-  private void runAutomation(String merchants) {
-    CompletableFuture.runAsync(
-        () -> {
-          merchantService.runAutomation(merchants);
+    private void runAutomation(String merchants) {
+        CompletableFuture.runAsync(() -> {
+            merchantService.runAutomation(merchants);
         });
-  }
+    }
 }

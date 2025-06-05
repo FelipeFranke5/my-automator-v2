@@ -89,7 +89,7 @@
 						<formatAnnotations/>
 						<endWithNewline/>
 						<trimTrailingWhitespace/>
-						<googleJavaFormat/>
+						<palantirJavaFormat/>
 					</java>
 				</configuration>
 			</plugin>

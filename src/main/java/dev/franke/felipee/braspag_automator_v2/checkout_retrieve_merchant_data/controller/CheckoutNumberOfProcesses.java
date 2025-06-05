@@ -4,4 +4,4 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 
 public record CheckoutNumberOfProcesses(
-    @JsonProperty("dataHora") LocalDateTime timestamp, @JsonProperty("numero") byte number) {}
+        @JsonProperty("dataHora") LocalDateTime timestamp, @JsonProperty("numero") byte number) {}

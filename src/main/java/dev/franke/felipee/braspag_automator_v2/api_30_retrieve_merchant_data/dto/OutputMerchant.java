@@ -5,6 +5,6 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record OutputMerchant(
-    @JsonProperty("idRegistro") UUID recordId,
-    @JsonProperty("numeroEc") String ec,
-    @JsonProperty("dataRegistro") LocalDateTime recordTimestamp) {}
+        @JsonProperty("idRegistro") UUID recordId,
+        @JsonProperty("numeroEc") String ec,
+        @JsonProperty("dataRegistro") LocalDateTime recordTimestamp) {}

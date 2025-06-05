@@ -21,140 +21,137 @@ import org.springframework.stereotype.Service;
 @Service
 public class CheckoutFileHandler {
 
-  private static final Logger LOG = LoggerFactory.getLogger(CheckoutFileHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CheckoutFileHandler.class);
 
-  private final CheckoutCompletedAutomationService automationService;
-  private final ObjectMapper objectMapper;
+    private final CheckoutCompletedAutomationService automationService;
+    private final ObjectMapper objectMapper;
 
-  public CheckoutFileHandler(
-      final CheckoutCompletedAutomationService automationService, final ObjectMapper objectMapper) {
-    this.automationService = automationService;
-    this.objectMapper = objectMapper;
-  }
-
-  public Optional<CheckoutCompletedAutomation> getMerchantDataFromFile(final String ec) {
-    if (ec == null || ec.isBlank() || ec.length() != 10) {
-      LOG.warn("EC is not valid, returning null");
-      return Optional.empty();
+    public CheckoutFileHandler(
+            final CheckoutCompletedAutomationService automationService, final ObjectMapper objectMapper) {
+        this.automationService = automationService;
+        this.objectMapper = objectMapper;
     }
 
-    try {
-      LOG.info("[{}] Attempting to read the JSON file", ec);
-      return Optional.of(
-          objectMapper.readValue(new File(ec + ".json"), CheckoutCompletedAutomation.class));
-    } catch (final IOException ioException) {
-      LOG.error("[{}] There was an error while attempting to read the JSON file", ec, ioException);
-      return Optional.empty();
+    public Optional<CheckoutCompletedAutomation> getMerchantDataFromFile(final String ec) {
+        if (ec == null || ec.isBlank() || ec.length() != 10) {
+            LOG.warn("EC is not valid, returning null");
+            return Optional.empty();
+        }
+
+        try {
+            LOG.info("[{}] Attempting to read the JSON file", ec);
+            return Optional.of(objectMapper.readValue(new File(ec + ".json"), CheckoutCompletedAutomation.class));
+        } catch (final IOException ioException) {
+            LOG.error("[{}] There was an error while attempting to read the JSON file", ec, ioException);
+            return Optional.empty();
+        }
     }
-  }
 
-  public void deleteJsonFileAfterAutomation(final String ec) {
-    if (ec == null || ec.isBlank() || ec.length() != 10) {
-      LOG.warn("Not deleting file, because EC is not valid");
-      return;
+    public void deleteJsonFileAfterAutomation(final String ec) {
+        if (ec == null || ec.isBlank() || ec.length() != 10) {
+            LOG.warn("Not deleting file, because EC is not valid");
+            return;
+        }
+
+        try {
+            LOG.info("[{}] Attempting to delete the JSON file", ec);
+            final boolean result = Files.deleteIfExists(Path.of(ec + ".json"));
+            LOG.info("[{}] Result of deletion: {}", ec, result);
+        } catch (final IOException ioException) {
+            LOG.error("There was an error while attempting to delete the JSON file", ioException);
+        }
     }
 
-    try {
-      LOG.info("[{}] Attempting to delete the JSON file", ec);
-      final boolean result = Files.deleteIfExists(Path.of(ec + ".json"));
-      LOG.info("[{}] Result of deletion: {}", ec, result);
-    } catch (final IOException ioException) {
-      LOG.error("There was an error while attempting to delete the JSON file", ioException);
-    }
-  }
+    public byte[] writeToExcelFile() throws IOException {
+        LOG.info("Initializing function to write to excel");
 
-  public byte[] writeToExcelFile() throws IOException {
-    LOG.info("Initializing function to write to excel");
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            final Sheet sheet = workbook.createSheet("Dados Checkout");
+            sheet.setColumnWidth(0, 6000);
+            sheet.setColumnWidth(1, 4000);
 
-    try (XSSFWorkbook workbook = new XSSFWorkbook()) {
-      final Sheet sheet = workbook.createSheet("Dados Checkout");
-      sheet.setColumnWidth(0, 6000);
-      sheet.setColumnWidth(1, 4000);
+            final Row header = sheet.createRow(0);
+            final CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
-      final Row header = sheet.createRow(0);
-      final CellStyle headerStyle = workbook.createCellStyle();
-      headerStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
-      headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-      headerStyle.setAlignment(HorizontalAlignment.CENTER);
-      headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            final XSSFFont font = workbook.createFont();
+            font.setFontName("Calibri");
+            font.setFontHeightInPoints((short) 12);
+            font.setBold(true);
+            font.setColor(IndexedColors.WHITE.getIndex());
+            headerStyle.setFont(font);
 
-      final XSSFFont font = workbook.createFont();
-      font.setFontName("Calibri");
-      font.setFontHeightInPoints((short) 12);
-      font.setBold(true);
-      font.setColor(IndexedColors.WHITE.getIndex());
-      headerStyle.setFont(font);
+            final CellStyle bodyStyle = workbook.createCellStyle();
+            final XSSFFont bodyFont = workbook.createFont();
+            bodyFont.setFontName("Calibri");
+            bodyFont.setFontHeightInPoints((short) 9);
+            bodyStyle.setFont(bodyFont);
+            bodyStyle.setAlignment(HorizontalAlignment.CENTER);
+            bodyStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
-      final CellStyle bodyStyle = workbook.createCellStyle();
-      final XSSFFont bodyFont = workbook.createFont();
-      bodyFont.setFontName("Calibri");
-      bodyFont.setFontHeightInPoints((short) 9);
-      bodyStyle.setFont(bodyFont);
-      bodyStyle.setAlignment(HorizontalAlignment.CENTER);
-      bodyStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            Cell headerCell = header.createCell(0);
+            headerCell.setCellValue("ID do Registro");
+            headerCell.setCellStyle(headerStyle);
 
-      Cell headerCell = header.createCell(0);
-      headerCell.setCellValue("ID do Registro");
-      headerCell.setCellStyle(headerStyle);
+            headerCell = header.createCell(1);
+            headerCell.setCellValue("EC");
+            headerCell.setCellStyle(headerStyle);
 
-      headerCell = header.createCell(1);
-      headerCell.setCellValue("EC");
-      headerCell.setCellStyle(headerStyle);
+            headerCell = header.createCell(2);
+            headerCell.setCellValue("Gostaria de ser chamado de");
+            headerCell.setCellStyle(headerStyle);
 
-      headerCell = header.createCell(2);
-      headerCell.setCellValue("Gostaria de ser chamado de");
-      headerCell.setCellStyle(headerStyle);
+            headerCell = header.createCell(3);
+            headerCell.setCellValue("Nome Fantasia");
+            headerCell.setCellStyle(headerStyle);
 
-      headerCell = header.createCell(3);
-      headerCell.setCellValue("Nome Fantasia");
-      headerCell.setCellStyle(headerStyle);
+            headerCell = header.createCell(4);
+            headerCell.setCellValue("Loja Bloqueada");
+            headerCell.setCellStyle(headerStyle);
 
-      headerCell = header.createCell(4);
-      headerCell.setCellValue("Loja Bloqueada");
-      headerCell.setCellStyle(headerStyle);
+            headerCell = header.createCell(5);
+            headerCell.setCellValue("Modo de Teste Ativo");
+            headerCell.setCellStyle(headerStyle);
 
-      headerCell = header.createCell(5);
-      headerCell.setCellValue("Modo de Teste Ativo");
-      headerCell.setCellStyle(headerStyle);
+            headerCell = header.createCell(6);
+            headerCell.setCellValue("Aceita Pagamento Internacional");
+            headerCell.setCellStyle(headerStyle);
 
-      headerCell = header.createCell(6);
-      headerCell.setCellValue("Aceita Pagamento Internacional");
-      headerCell.setCellStyle(headerStyle);
+            headerCell = header.createCell(7);
+            headerCell.setCellValue("URL de Notificação");
+            headerCell.setCellStyle(headerStyle);
 
-      headerCell = header.createCell(7);
-      headerCell.setCellValue("URL de Notificação");
-      headerCell.setCellStyle(headerStyle);
+            headerCell = header.createCell(8);
+            headerCell.setCellValue("URL de Retorno");
+            headerCell.setCellStyle(headerStyle);
 
-      headerCell = header.createCell(8);
-      headerCell.setCellValue("URL de Retorno");
-      headerCell.setCellStyle(headerStyle);
+            headerCell = header.createCell(9);
+            headerCell.setCellValue("URL de Mudança de Status");
+            headerCell.setCellStyle(headerStyle);
 
-      headerCell = header.createCell(9);
-      headerCell.setCellValue("URL de Mudança de Status");
-      headerCell.setCellStyle(headerStyle);
+            headerCell = header.createCell(10);
+            headerCell.setCellValue("3DS Habilitado");
+            headerCell.setCellStyle(headerStyle);
 
-      headerCell = header.createCell(10);
-      headerCell.setCellValue("3DS Habilitado");
-      headerCell.setCellStyle(headerStyle);
+            headerCell = header.createCell(11);
+            headerCell.setCellValue("EC Amex");
+            headerCell.setCellStyle(headerStyle);
 
-      headerCell = header.createCell(11);
-      headerCell.setCellValue("EC Amex");
-      headerCell.setCellStyle(headerStyle);
+            headerCell = header.createCell(12);
+            headerCell.setCellValue("Autenticação Facial Habilitada");
+            headerCell.setCellStyle(headerStyle);
 
-      headerCell = header.createCell(12);
-      headerCell.setCellValue("Autenticação Facial Habilitada");
-      headerCell.setCellStyle(headerStyle);
+            headerCell = header.createCell(13);
+            headerCell.setCellValue("Data e Hora do Registro");
+            headerCell.setCellStyle(headerStyle);
 
-      headerCell = header.createCell(13);
-      headerCell.setCellValue("Data e Hora do Registro");
-      headerCell.setCellStyle(headerStyle);
+            final AtomicReference<Short> currentRowNumber = new AtomicReference<>((short) 1);
+            final List<CompletedAutomationOutputForExcel> merchants = automationService.outputForExcel();
 
-      final AtomicReference<Short> currentRowNumber = new AtomicReference<>((short) 1);
-      final List<CompletedAutomationOutputForExcel> merchants = automationService.outputForExcel();
-
-      merchants.stream()
-          .forEach(
-              merchant -> {
+            merchants.stream().forEach(merchant -> {
                 final Row newRow = sheet.createRow(currentRowNumber.get());
 
                 final Cell ecCell = newRow.createCell(0);
@@ -214,15 +211,15 @@ public class CheckoutFileHandler {
                 selectiveAuthEnabledCell.setCellStyle(bodyStyle);
 
                 currentRowNumber.getAndSet((short) (currentRowNumber.get() + 1));
-              });
+            });
 
-      LOG.info("Attempting to write to file");
+            LOG.info("Attempting to write to file");
 
-      try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-        workbook.write(outputStream);
-        LOG.info("Wrote successfully");
-        return outputStream.toByteArray();
-      }
+            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                workbook.write(outputStream);
+                LOG.info("Wrote successfully");
+                return outputStream.toByteArray();
+            }
+        }
     }
-  }
 }
