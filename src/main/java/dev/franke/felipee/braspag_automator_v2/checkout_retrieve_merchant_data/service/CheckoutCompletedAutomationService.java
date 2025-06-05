@@ -6,7 +6,6 @@ import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.m
 import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.repository.CheckoutCompletedAutomationRepository;
 import java.util.List;
 import java.util.Optional;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

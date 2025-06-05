@@ -18,7 +18,8 @@ public class Enable3DSFailController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getFailedResults(@RequestHeader(name = "Authorization", required = true) String authorizationHeader) {
+    public ResponseEntity<?> getFailedResults(
+            @RequestHeader(name = "Authorization", required = true) String authorizationHeader) {
         if (!headerValidator.headerIsValid(authorizationHeader)) {
             return ResponseEntity.status(401).build();
         }
@@ -26,12 +27,12 @@ public class Enable3DSFailController {
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> clear(@RequestHeader(name = "Authorization", required = true) String authorizationHeader) {
+    public ResponseEntity<Void> clear(
+            @RequestHeader(name = "Authorization", required = true) String authorizationHeader) {
         if (!headerValidator.headerIsValid(authorizationHeader)) {
             return ResponseEntity.status(401).build();
         }
         service.removeAll();
         return ResponseEntity.noContent().build();
     }
-
 }

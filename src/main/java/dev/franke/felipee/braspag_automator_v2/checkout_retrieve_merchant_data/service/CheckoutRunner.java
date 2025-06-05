@@ -54,9 +54,7 @@ public class CheckoutRunner {
     }
 
     public void run(final String[] merchantEcNumbers) {
-        CompletableFuture.runAsync(
-                () -> validateAndRun(merchantEcNumbers),
-                executor);
+        CompletableFuture.runAsync(() -> validateAndRun(merchantEcNumbers), executor);
     }
 
     //
@@ -78,7 +76,9 @@ public class CheckoutRunner {
                     final byte result = singleEcRun(ecNumber);
                     if (result == 0) {
                         final var data = fileHandler.getMerchantDataFromFile(ecNumber);
-                        data.ifPresentOrElse(automationService::save, () -> failedAutomationService.save(ecNumber, "Erro de execucao"));
+                        data.ifPresentOrElse(
+                                automationService::save,
+                                () -> failedAutomationService.save(ecNumber, "Erro de execucao"));
                     }
                     fileHandler.deleteJsonFileAfterAutomation(ecNumber);
                 },

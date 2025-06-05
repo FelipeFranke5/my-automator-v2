@@ -1,11 +1,9 @@
 package dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.service;
 
-import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.model.Enable3DSFail;
 import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.model.CheckoutFailedAutomation;
 import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.repository.CheckoutFailedAutomationRepository;
 import java.util.List;
 import java.util.Optional;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

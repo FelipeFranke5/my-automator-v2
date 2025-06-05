@@ -54,9 +54,7 @@ public class Enable3DSResultRunner {
                 () -> {
                     for (final String ec : ecs) {
 
-                        CompletableFuture.runAsync(
-                                () -> singleEcAutomation(ec),
-                                executor);
+                        CompletableFuture.runAsync(() -> singleEcAutomation(ec), executor);
                     }
                 },
                 executor);

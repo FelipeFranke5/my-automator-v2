@@ -52,8 +52,7 @@ public class Enable3DSResultController {
     }
 
     @GetMapping("/text")
-    public ResponseEntity<?> getResults(
-            @RequestHeader(name = "Authorization") String authorizationHeader) {
+    public ResponseEntity<?> getResults(@RequestHeader(name = "Authorization") String authorizationHeader) {
         if (!headerValidator.headerIsValid(authorizationHeader)) {
             return ResponseEntity.status(401).build();
         }
