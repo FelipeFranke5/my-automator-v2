@@ -12,7 +12,8 @@ public class CheckoutFailedAutomationController {
     private final CheckoutFailedAutomationService service;
     private final HeaderValidator headerValidator;
 
-    public CheckoutFailedAutomationController(CheckoutFailedAutomationService service, HeaderValidator headerValidator) {
+    public CheckoutFailedAutomationController(
+            CheckoutFailedAutomationService service, HeaderValidator headerValidator) {
         this.service = service;
         this.headerValidator = headerValidator;
     }

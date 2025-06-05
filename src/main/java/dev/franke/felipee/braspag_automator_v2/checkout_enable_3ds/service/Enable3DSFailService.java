@@ -2,10 +2,9 @@ package dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.service;
 
 import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.model.Enable3DSFail;
 import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.repository.Enable3DSFailRepository;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
+import org.springframework.stereotype.Service;
 
 @Service
 public class Enable3DSFailService {
@@ -53,5 +52,4 @@ public class Enable3DSFailService {
     public void removeAll() {
         repository.deleteAll();
     }
-
 }
