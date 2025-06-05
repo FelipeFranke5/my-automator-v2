@@ -1,10 +1,8 @@
 package dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.service;
 
 import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.service.CheckoutMerchantValidator;
-import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.controller.CheckoutNumberOfProcesses;
 import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.service.utils.ProcessExecutionCheckoutData;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -53,11 +51,6 @@ public class CheckoutRunner {
         this.processExecutionCheckoutData = processExecutionCheckoutData;
         this.failedAutomationService = failedAutomationService;
         this.automationService = automationService;
-    }
-
-    public CheckoutNumberOfProcesses getNumberOfProcesses() {
-        return new CheckoutNumberOfProcesses(
-                LocalDateTime.now(), processExecutionCheckoutData.getNumberOfPythonProcesses());
     }
 
     public void run(final String[] merchantEcNumbers) {
