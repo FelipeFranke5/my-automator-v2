@@ -1,5 +1,6 @@
 package dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.service;
 
+import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.dto.ResultOutput;
 import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.model.Enable3DSResult;
 import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.repository.Enable3DSResultRepository;
 import java.util.List;
@@ -67,15 +68,16 @@ public class Enable3DSResultService {
 
         StringBuilder builder = new StringBuilder();
 
-        results.forEach(result -> {
-            builder.append("\n").append(result.getEc()).append("     ").append(result.getResult());
-        });
+        results.forEach(result ->
+                builder.append("\n").append(result.getEc()).append("     ").append(result.getResult()));
 
         return builder.toString();
     }
 
-    public List<Enable3DSResult> resultsJson() {
-        return allResults();
+    public List<ResultOutput> resultsJson() {
+        return allResults().stream()
+                .map(res -> new ResultOutput(res.getEc(), res.getResult()))
+                .toList();
     }
 
     public void deleteAll() {

@@ -1,5 +1,6 @@
 package dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.service;
 
+import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.dto.ResultOutput;
 import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.model.Enable3DSFail;
 import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.repository.Enable3DSFailRepository;
 import java.util.List;
@@ -45,7 +46,13 @@ public class Enable3DSFailService {
         }
     }
 
-    public List<Enable3DSFail> listAll() {
+    public List<ResultOutput> jsonOutput() {
+        return listAll().stream()
+                .map(res -> new ResultOutput(res.getEc(), res.getResult()))
+                .toList();
+    }
+
+    private List<Enable3DSFail> listAll() {
         return repository.findAll();
     }
 

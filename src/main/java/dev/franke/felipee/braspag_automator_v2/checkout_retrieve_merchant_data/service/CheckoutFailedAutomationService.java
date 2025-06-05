@@ -1,5 +1,6 @@
 package dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.service;
 
+import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.dto.ResultOutput;
 import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.model.CheckoutFailedAutomation;
 import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.repository.CheckoutFailedAutomationRepository;
 import java.util.List;
@@ -55,7 +56,13 @@ public class CheckoutFailedAutomationService {
         }
     }
 
-    public List<CheckoutFailedAutomation> getAll() {
+    public List<ResultOutput> jsonOutput() {
+        return getAll().stream()
+                .map(res -> new ResultOutput(res.getEcNumber(), res.getMessage()))
+                .toList();
+    }
+
+    private List<CheckoutFailedAutomation> getAll() {
         return repository.findAll();
     }
 
