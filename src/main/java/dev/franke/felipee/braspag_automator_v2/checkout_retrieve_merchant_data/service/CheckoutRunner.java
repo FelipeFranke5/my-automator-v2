@@ -24,7 +24,7 @@ public class CheckoutRunner {
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(CheckoutRunner.class);
-    private static final ExecutorService executor = Executors.newFixedThreadPool(2);
+    private static final ExecutorService executor = Executors.newFixedThreadPool(4);
 
     private static final String TIMEOUT_MESSAGE = "Falha devido a Timeout";
     private static final String INVALID_CREDENTIALS_MESSAGE = "Falha devido a Credenciais Invalidas";
