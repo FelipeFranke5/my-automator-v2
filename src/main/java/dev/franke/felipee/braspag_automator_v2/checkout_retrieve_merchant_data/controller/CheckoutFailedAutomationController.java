@@ -23,7 +23,7 @@ public class CheckoutFailedAutomationController {
         if (!headerValidator.headerIsValid(authorizationHeader)) {
             return ResponseEntity.status(401).build();
         }
-        return ResponseEntity.ok(service.getAll());
+        return ResponseEntity.ok(service.jsonOutput());
     }
 
     @DeleteMapping
