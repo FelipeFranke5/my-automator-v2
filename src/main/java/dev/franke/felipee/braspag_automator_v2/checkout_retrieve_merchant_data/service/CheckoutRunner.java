@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 public class CheckoutRunner {
 
     // Generic function to convert array to set
-    public static <T> Set<T> convertArrayToSet(final T array[]) {
+    public static <T> Set<T> convertArrayToSet(final T[] array) {
         return Arrays.stream(array).collect(Collectors.toSet());
     }
 
@@ -62,11 +62,8 @@ public class CheckoutRunner {
 
     public void run(final String[] merchantEcNumbers) {
         CompletableFuture.runAsync(
-                () -> {
-                    validateAndRun(merchantEcNumbers);
-                },
+                () -> validateAndRun(merchantEcNumbers),
                 executor);
-        LOG.info("CheckoutRunner service execution completed.");
     }
 
     //
@@ -83,22 +80,20 @@ public class CheckoutRunner {
 
         final Set<String> ecNumbersSet = convertArrayToSet(merchantEcNumbers);
 
-        ecNumbersSet.forEach(ecNumber -> {
-            CompletableFuture.runAsync(
-                    () -> {
-                        final byte result = singleEcRun(ecNumber);
-                        if (result == 0) {
-                            final var data = fileHandler.getMerchantDataFromFile(ecNumber);
-                            data.ifPresent(automationService::save);
-                        }
-                        fileHandler.deleteJsonFileAfterAutomation(ecNumber);
-                    },
-                    executor);
-        });
+        ecNumbersSet.forEach(ecNumber -> CompletableFuture.runAsync(
+                () -> {
+                    final byte result = singleEcRun(ecNumber);
+                    if (result == 0) {
+                        final var data = fileHandler.getMerchantDataFromFile(ecNumber);
+                        data.ifPresentOrElse(automationService::save, () -> failedAutomationService.save(ecNumber, "Erro de execucao"));
+                    }
+                    fileHandler.deleteJsonFileAfterAutomation(ecNumber);
+                },
+                executor));
     }
 
     private byte singleEcRun(final String ecNumber) {
-        byte finalResult = -3;
+        byte finalResult;
 
         try {
             final String lastLine = processExecutionCheckoutData.run(ecNumber);
