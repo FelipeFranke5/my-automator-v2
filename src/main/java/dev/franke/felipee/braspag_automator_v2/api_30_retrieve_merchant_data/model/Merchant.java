@@ -12,242 +12,243 @@ import org.hibernate.annotations.CreationTimestamp;
 @Entity
 public class Merchant {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
-  private UUID recordId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID recordId;
 
-  private String ec;
+    private String ec;
 
-  @JsonProperty("mid")
-  private UUID id;
+    @JsonProperty("mid")
+    private UUID id;
 
-  @JsonProperty("document_type")
-  private String documentType;
+    @JsonProperty("document_type")
+    private String documentType;
 
-  @JsonProperty("document_number")
-  private String documentNumber;
+    @JsonProperty("document_number")
+    private String documentNumber;
 
-  private String name;
+    private String name;
 
-  @JsonProperty("created_at")
-  private String createdAt;
+    @JsonProperty("created_at")
+    private String createdAt;
 
-  private boolean blocked;
+    private boolean blocked;
 
-  @JsonProperty("pix_enabled")
-  private boolean pixEnabled;
+    @JsonProperty("pix_enabled")
+    private boolean pixEnabled;
 
-  @JsonProperty("antifraud_enabled")
-  private boolean antifraudEnabled;
+    @JsonProperty("antifraud_enabled")
+    private boolean antifraudEnabled;
 
-  @JsonProperty("tokenization_enabled")
-  private boolean tokenizationEnabled;
+    @JsonProperty("tokenization_enabled")
+    private boolean tokenizationEnabled;
 
-  @JsonProperty("velocity_enabled")
-  private boolean velocityEnabled;
+    @JsonProperty("velocity_enabled")
+    private boolean velocityEnabled;
 
-  @JsonProperty("smart_recurrency_enabled")
-  private boolean smartRecurrencyEnabled;
+    @JsonProperty("smart_recurrency_enabled")
+    private boolean smartRecurrencyEnabled;
 
-  @JsonProperty("zero_dollar_auth_enabled")
-  private boolean zeroDollarAuthEnabled;
+    @JsonProperty("zero_dollar_auth_enabled")
+    private boolean zeroDollarAuthEnabled;
 
-  @JsonProperty("bin_query_enabled")
-  private boolean binQueryEnabled;
+    @JsonProperty("bin_query_enabled")
+    private boolean binQueryEnabled;
 
-  @JsonProperty("selective_auth_enabled")
-  private boolean selectiveAuthEnabled;
+    @JsonProperty("selective_auth_enabled")
+    private boolean selectiveAuthEnabled;
 
-  @JsonProperty("try_automatic_cancellation_enabled")
-  private boolean tryAutomaticCancellationEnabled;
+    @JsonProperty("try_automatic_cancellation_enabled")
+    private boolean tryAutomaticCancellationEnabled;
 
-  @JsonProperty("force_braspag_auth_enabled")
-  private boolean forceBraspagAuthEnabled;
+    @JsonProperty("force_braspag_auth_enabled")
+    private boolean forceBraspagAuthEnabled;
 
-  @JsonProperty("mtls_enabled")
-  private boolean mtlsEnabled;
+    @JsonProperty("mtls_enabled")
+    private boolean mtlsEnabled;
 
-  @JsonProperty("webhook_enabled")
-  private boolean webhookEnabled;
+    @JsonProperty("webhook_enabled")
+    private boolean webhookEnabled;
 
-  @JsonProperty("white_list_ip_count")
-  private int whiteListIpCount;
+    @JsonProperty("white_list_ip_count")
+    private int whiteListIpCount;
 
-  @CreationTimestamp private LocalDateTime recordTimestamp;
+    @CreationTimestamp
+    private LocalDateTime recordTimestamp;
 
-  public UUID getRecordId() {
-    return recordId;
-  }
+    public UUID getRecordId() {
+        return recordId;
+    }
 
-  public void setRecordId(UUID recordId) {
-    this.recordId = recordId;
-  }
+    public void setRecordId(UUID recordId) {
+        this.recordId = recordId;
+    }
 
-  public String getEc() {
-    return ec;
-  }
+    public String getEc() {
+        return ec;
+    }
 
-  public void setEc(String ec) {
-    this.ec = ec;
-  }
+    public void setEc(String ec) {
+        this.ec = ec;
+    }
 
-  public UUID getId() {
-    return id;
-  }
+    public UUID getId() {
+        return id;
+    }
 
-  public void setId(UUID id) {
-    this.id = id;
-  }
+    public void setId(UUID id) {
+        this.id = id;
+    }
 
-  public String getDocumentType() {
-    return documentType;
-  }
+    public String getDocumentType() {
+        return documentType;
+    }
 
-  public void setDocumentType(String documentType) {
-    this.documentType = documentType;
-  }
+    public void setDocumentType(String documentType) {
+        this.documentType = documentType;
+    }
 
-  public String getDocumentNumber() {
-    return documentNumber;
-  }
+    public String getDocumentNumber() {
+        return documentNumber;
+    }
 
-  public void setDocumentNumber(String documentNumber) {
-    this.documentNumber = documentNumber;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public String getCreatedAt() {
-    return createdAt;
-  }
-
-  public void setCreatedAt(String createdAt) {
-    this.createdAt = createdAt;
-  }
-
-  public boolean isBlocked() {
-    return blocked;
-  }
-
-  public void setBlocked(boolean blocked) {
-    this.blocked = blocked;
-  }
-
-  public boolean isPixEnabled() {
-    return pixEnabled;
-  }
-
-  public void setPixEnabled(boolean pixEnabled) {
-    this.pixEnabled = pixEnabled;
-  }
-
-  public boolean isAntifraudEnabled() {
-    return antifraudEnabled;
-  }
-
-  public void setAntifraudEnabled(boolean antifraudEnabled) {
-    this.antifraudEnabled = antifraudEnabled;
-  }
-
-  public boolean isTokenizationEnabled() {
-    return tokenizationEnabled;
-  }
-
-  public void setTokenizationEnabled(boolean tokenizationEnabled) {
-    this.tokenizationEnabled = tokenizationEnabled;
-  }
-
-  public boolean isVelocityEnabled() {
-    return velocityEnabled;
-  }
-
-  public void setVelocityEnabled(boolean velocityEnabled) {
-    this.velocityEnabled = velocityEnabled;
-  }
-
-  public boolean isSmartRecurrencyEnabled() {
-    return smartRecurrencyEnabled;
-  }
-
-  public void setSmartRecurrencyEnabled(boolean smartRecurrencyEnabled) {
-    this.smartRecurrencyEnabled = smartRecurrencyEnabled;
-  }
-
-  public boolean isZeroDollarAuthEnabled() {
-    return zeroDollarAuthEnabled;
-  }
-
-  public void setZeroDollarAuthEnabled(boolean zeroDollarAuthEnabled) {
-    this.zeroDollarAuthEnabled = zeroDollarAuthEnabled;
-  }
-
-  public boolean isBinQueryEnabled() {
-    return binQueryEnabled;
-  }
-
-  public void setBinQueryEnabled(boolean binQueryEnabled) {
-    this.binQueryEnabled = binQueryEnabled;
-  }
-
-  public boolean isSelectiveAuthEnabled() {
-    return selectiveAuthEnabled;
-  }
-
-  public void setSelectiveAuthEnabled(boolean selectiveAuthEnabled) {
-    this.selectiveAuthEnabled = selectiveAuthEnabled;
-  }
-
-  public boolean isTryAutomaticCancellationEnabled() {
-    return tryAutomaticCancellationEnabled;
-  }
-
-  public void setTryAutomaticCancellationEnabled(boolean tryAutomaticCancellationEnabled) {
-    this.tryAutomaticCancellationEnabled = tryAutomaticCancellationEnabled;
-  }
-
-  public boolean isForceBraspagAuthEnabled() {
-    return forceBraspagAuthEnabled;
-  }
-
-  public void setForceBraspagAuthEnabled(boolean forceBraspagAuthEnabled) {
-    this.forceBraspagAuthEnabled = forceBraspagAuthEnabled;
-  }
-
-  public boolean isMtlsEnabled() {
-    return mtlsEnabled;
-  }
-
-  public void setMtlsEnabled(boolean mtlsEnabled) {
-    this.mtlsEnabled = mtlsEnabled;
-  }
-
-  public boolean isWebhookEnabled() {
-    return webhookEnabled;
-  }
-
-  public void setWebhookEnabled(boolean webhookEnabled) {
-    this.webhookEnabled = webhookEnabled;
-  }
-
-  public int getWhiteListIpCount() {
-    return whiteListIpCount;
-  }
-
-  public void setWhiteListIpCount(int whiteListIpCount) {
-    this.whiteListIpCount = whiteListIpCount;
-  }
-
-  public LocalDateTime getRecordTimestamp() {
-    return recordTimestamp;
-  }
-
-  public void setRecordTimestamp(LocalDateTime recordTimestamp) {
-    this.recordTimestamp = recordTimestamp;
-  }
+    public void setDocumentNumber(String documentNumber) {
+        this.documentNumber = documentNumber;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public boolean isBlocked() {
+        return blocked;
+    }
+
+    public void setBlocked(boolean blocked) {
+        this.blocked = blocked;
+    }
+
+    public boolean isPixEnabled() {
+        return pixEnabled;
+    }
+
+    public void setPixEnabled(boolean pixEnabled) {
+        this.pixEnabled = pixEnabled;
+    }
+
+    public boolean isAntifraudEnabled() {
+        return antifraudEnabled;
+    }
+
+    public void setAntifraudEnabled(boolean antifraudEnabled) {
+        this.antifraudEnabled = antifraudEnabled;
+    }
+
+    public boolean isTokenizationEnabled() {
+        return tokenizationEnabled;
+    }
+
+    public void setTokenizationEnabled(boolean tokenizationEnabled) {
+        this.tokenizationEnabled = tokenizationEnabled;
+    }
+
+    public boolean isVelocityEnabled() {
+        return velocityEnabled;
+    }
+
+    public void setVelocityEnabled(boolean velocityEnabled) {
+        this.velocityEnabled = velocityEnabled;
+    }
+
+    public boolean isSmartRecurrencyEnabled() {
+        return smartRecurrencyEnabled;
+    }
+
+    public void setSmartRecurrencyEnabled(boolean smartRecurrencyEnabled) {
+        this.smartRecurrencyEnabled = smartRecurrencyEnabled;
+    }
+
+    public boolean isZeroDollarAuthEnabled() {
+        return zeroDollarAuthEnabled;
+    }
+
+    public void setZeroDollarAuthEnabled(boolean zeroDollarAuthEnabled) {
+        this.zeroDollarAuthEnabled = zeroDollarAuthEnabled;
+    }
+
+    public boolean isBinQueryEnabled() {
+        return binQueryEnabled;
+    }
+
+    public void setBinQueryEnabled(boolean binQueryEnabled) {
+        this.binQueryEnabled = binQueryEnabled;
+    }
+
+    public boolean isSelectiveAuthEnabled() {
+        return selectiveAuthEnabled;
+    }
+
+    public void setSelectiveAuthEnabled(boolean selectiveAuthEnabled) {
+        this.selectiveAuthEnabled = selectiveAuthEnabled;
+    }
+
+    public boolean isTryAutomaticCancellationEnabled() {
+        return tryAutomaticCancellationEnabled;
+    }
+
+    public void setTryAutomaticCancellationEnabled(boolean tryAutomaticCancellationEnabled) {
+        this.tryAutomaticCancellationEnabled = tryAutomaticCancellationEnabled;
+    }
+
+    public boolean isForceBraspagAuthEnabled() {
+        return forceBraspagAuthEnabled;
+    }
+
+    public void setForceBraspagAuthEnabled(boolean forceBraspagAuthEnabled) {
+        this.forceBraspagAuthEnabled = forceBraspagAuthEnabled;
+    }
+
+    public boolean isMtlsEnabled() {
+        return mtlsEnabled;
+    }
+
+    public void setMtlsEnabled(boolean mtlsEnabled) {
+        this.mtlsEnabled = mtlsEnabled;
+    }
+
+    public boolean isWebhookEnabled() {
+        return webhookEnabled;
+    }
+
+    public void setWebhookEnabled(boolean webhookEnabled) {
+        this.webhookEnabled = webhookEnabled;
+    }
+
+    public int getWhiteListIpCount() {
+        return whiteListIpCount;
+    }
+
+    public void setWhiteListIpCount(int whiteListIpCount) {
+        this.whiteListIpCount = whiteListIpCount;
+    }
+
+    public LocalDateTime getRecordTimestamp() {
+        return recordTimestamp;
+    }
+
+    public void setRecordTimestamp(LocalDateTime recordTimestamp) {
+        this.recordTimestamp = recordTimestamp;
+    }
 }

@@ -12,56 +12,56 @@ import org.hibernate.annotations.CreationTimestamp;
 @Entity
 public class FailedScriptRecord {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
-  private UUID id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
-  @JsonProperty("numeroEc")
-  private String ecNumber;
+    @JsonProperty("numeroEc")
+    private String ecNumber;
 
-  @JsonProperty("mensagem")
-  private String message;
+    @JsonProperty("mensagem")
+    private String message;
 
-  @JsonProperty("dataRegistro")
-  @CreationTimestamp
-  private LocalDateTime recordTimestamp;
+    @JsonProperty("dataRegistro")
+    @CreationTimestamp
+    private LocalDateTime recordTimestamp;
 
-  public FailedScriptRecord() {}
+    public FailedScriptRecord() {}
 
-  public FailedScriptRecord(String ecNumber, String message) {
-    this.ecNumber = ecNumber;
-    this.message = message;
-  }
+    public FailedScriptRecord(String ecNumber, String message) {
+        this.ecNumber = ecNumber;
+        this.message = message;
+    }
 
-  public UUID getId() {
-    return id;
-  }
+    public UUID getId() {
+        return id;
+    }
 
-  public void setId(UUID id) {
-    this.id = id;
-  }
+    public void setId(UUID id) {
+        this.id = id;
+    }
 
-  public String getEcNumber() {
-    return ecNumber;
-  }
+    public String getEcNumber() {
+        return ecNumber;
+    }
 
-  public void setEcNumber(String ecNumber) {
-    this.ecNumber = ecNumber;
-  }
+    public void setEcNumber(String ecNumber) {
+        this.ecNumber = ecNumber;
+    }
 
-  public String getMessage() {
-    return message;
-  }
+    public String getMessage() {
+        return message;
+    }
 
-  public void setMessage(String message) {
-    this.message = message;
-  }
+    public void setMessage(String message) {
+        this.message = message;
+    }
 
-  public LocalDateTime getRecordTimestamp() {
-    return recordTimestamp;
-  }
+    public LocalDateTime getRecordTimestamp() {
+        return recordTimestamp;
+    }
 
-  public void setRecordTimestamp(LocalDateTime recordTimestamp) {
-    this.recordTimestamp = recordTimestamp;
-  }
+    public void setRecordTimestamp(LocalDateTime recordTimestamp) {
+        this.recordTimestamp = recordTimestamp;
+    }
 }

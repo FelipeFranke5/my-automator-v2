@@ -21,99 +21,99 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/checkout/retrieve-merchant")
 public class CheckoutAutomationController {
 
-  private final HeaderValidator headerValidator;
-  private final CheckoutMailSender checkoutMailSender;
-  private final CheckoutCompletedAutomationService checkoutCompletedAutomationService;
-  private final CheckoutRunner checkoutRunner;
-  private final CheckoutFailedAutomationService failedAutomationService;
+    private final HeaderValidator headerValidator;
+    private final CheckoutMailSender checkoutMailSender;
+    private final CheckoutCompletedAutomationService checkoutCompletedAutomationService;
+    private final CheckoutRunner checkoutRunner;
+    private final CheckoutFailedAutomationService failedAutomationService;
 
-  public CheckoutAutomationController(
-      final HeaderValidator headerValidator,
-      final CheckoutMailSender checkoutMailSender,
-      final CheckoutCompletedAutomationService checkoutCompletedAutomationService,
-      final CheckoutRunner checkoutRunner,
-      final CheckoutFailedAutomationService failedAutomationService) {
-    this.headerValidator = headerValidator;
-    this.checkoutMailSender = checkoutMailSender;
-    this.checkoutCompletedAutomationService = checkoutCompletedAutomationService;
-    this.checkoutRunner = checkoutRunner;
-    this.failedAutomationService = failedAutomationService;
-  }
-
-  @GetMapping("/pending")
-  public ResponseEntity<CheckoutNumberOfProcesses> getPendingAutomations(
-      @RequestHeader(name = "Authorization", required = true) final String authorizationHeader) {
-
-    if (!headerValidator.headerIsValid(authorizationHeader)) {
-      return ResponseEntity.status(401).build();
+    public CheckoutAutomationController(
+            final HeaderValidator headerValidator,
+            final CheckoutMailSender checkoutMailSender,
+            final CheckoutCompletedAutomationService checkoutCompletedAutomationService,
+            final CheckoutRunner checkoutRunner,
+            final CheckoutFailedAutomationService failedAutomationService) {
+        this.headerValidator = headerValidator;
+        this.checkoutMailSender = checkoutMailSender;
+        this.checkoutCompletedAutomationService = checkoutCompletedAutomationService;
+        this.checkoutRunner = checkoutRunner;
+        this.failedAutomationService = failedAutomationService;
     }
 
-    return ResponseEntity.ok().body(checkoutRunner.getNumberOfProcesses());
-  }
+    @GetMapping("/pending")
+    public ResponseEntity<CheckoutNumberOfProcesses> getPendingAutomations(
+            @RequestHeader(name = "Authorization", required = true) final String authorizationHeader) {
 
-  @GetMapping("/failed")
-  public ResponseEntity<List<CheckoutFailedAutomation>> getFailedAutomations(
-      @RequestHeader(name = "Authorization", required = true) final String authorizationHeader) {
+        if (!headerValidator.headerIsValid(authorizationHeader)) {
+            return ResponseEntity.status(401).build();
+        }
 
-    if (!headerValidator.headerIsValid(authorizationHeader)) {
-      return ResponseEntity.status(401).build();
+        return ResponseEntity.ok().body(checkoutRunner.getNumberOfProcesses());
     }
 
-    final List<CheckoutFailedAutomation> failedAutomations = failedAutomationService.getAll();
-    return ResponseEntity.ok(failedAutomations);
-  }
+    @GetMapping("/failed")
+    public ResponseEntity<List<CheckoutFailedAutomation>> getFailedAutomations(
+            @RequestHeader(name = "Authorization", required = true) final String authorizationHeader) {
 
-  @PostMapping
-  public ResponseEntity<Void> runAutomations(
-      @RequestHeader(name = "Authorization", required = true) final String authorizationHeader,
-      @RequestBody final String[] merchantEcNumbers) {
+        if (!headerValidator.headerIsValid(authorizationHeader)) {
+            return ResponseEntity.status(401).build();
+        }
 
-    if (!headerValidator.headerIsValid(authorizationHeader)) {
-      ResponseEntity.status(401).build();
+        final List<CheckoutFailedAutomation> failedAutomations = failedAutomationService.getAll();
+        return ResponseEntity.ok(failedAutomations);
     }
 
-    checkoutRunner.run(merchantEcNumbers);
-    return ResponseEntity.noContent().build();
-  }
+    @PostMapping
+    public ResponseEntity<Void> runAutomations(
+            @RequestHeader(name = "Authorization", required = true) final String authorizationHeader,
+            @RequestBody final String[] merchantEcNumbers) {
 
-  @GetMapping
-  public ResponseEntity<?> getCompletedAutomationOutput(
-      @RequestHeader(name = "Authorization", required = true) final String authorizationHeader) {
+        if (!headerValidator.headerIsValid(authorizationHeader)) {
+            ResponseEntity.status(401).build();
+        }
 
-    if (!headerValidator.headerIsValid(authorizationHeader)) {
-      return ResponseEntity.status(401).build();
+        checkoutRunner.run(merchantEcNumbers);
+        return ResponseEntity.noContent().build();
     }
 
-    return ResponseEntity.ok(checkoutCompletedAutomationService.outputForJson());
-  }
+    @GetMapping
+    public ResponseEntity<?> getCompletedAutomationOutput(
+            @RequestHeader(name = "Authorization", required = true) final String authorizationHeader) {
 
-  @GetMapping("/email")
-  public ResponseEntity<?> getMerchantsToEmail(
-      @RequestHeader(name = "Authorization", required = true) final String authorizationHeader,
-      @RequestBody final MerchantsToEmailInput input) {
+        if (!headerValidator.headerIsValid(authorizationHeader)) {
+            return ResponseEntity.status(401).build();
+        }
 
-    if (!headerValidator.headerIsValid(authorizationHeader)) {
-      return ResponseEntity.status(401).build();
+        return ResponseEntity.ok(checkoutCompletedAutomationService.outputForJson());
     }
 
-    EmailResponseBody result;
+    @GetMapping("/email")
+    public ResponseEntity<?> getMerchantsToEmail(
+            @RequestHeader(name = "Authorization", required = true) final String authorizationHeader,
+            @RequestBody final MerchantsToEmailInput input) {
 
-    if (input.email() == null || input.email().isEmpty()) {
-      result = new EmailResponseBody(LocalDateTime.now(), "Email e obrigatorio");
-      return ResponseEntity.status(400).body(result);
+        if (!headerValidator.headerIsValid(authorizationHeader)) {
+            return ResponseEntity.status(401).build();
+        }
+
+        EmailResponseBody result;
+
+        if (input.email() == null || input.email().isEmpty()) {
+            result = new EmailResponseBody(LocalDateTime.now(), "Email e obrigatorio");
+            return ResponseEntity.status(400).body(result);
+        }
+
+        final byte automationResult = checkoutMailSender.sendEmailWithExcelResults(input.email());
+        int statusCode;
+
+        if (automationResult == 0) {
+            result = new EmailResponseBody(LocalDateTime.now(), "Em processamento");
+            statusCode = 200;
+        } else {
+            result = new EmailResponseBody(LocalDateTime.now(), "Email invalido");
+            statusCode = 400;
+        }
+
+        return ResponseEntity.status(statusCode).body(result);
     }
-
-    final byte automationResult = checkoutMailSender.sendEmailWithExcelResults(input.email());
-    int statusCode;
-
-    if (automationResult == 0) {
-      result = new EmailResponseBody(LocalDateTime.now(), "Em processamento");
-      statusCode = 200;
-    } else {
-      result = new EmailResponseBody(LocalDateTime.now(), "Email invalido");
-      statusCode = 400;
-    }
-
-    return ResponseEntity.status(statusCode).body(result);
-  }
 }

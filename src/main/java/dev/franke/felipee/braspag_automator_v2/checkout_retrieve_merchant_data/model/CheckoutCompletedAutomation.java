@@ -12,192 +12,193 @@ import org.hibernate.annotations.CreationTimestamp;
 @Entity
 public class CheckoutCompletedAutomation {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
-  private UUID recordId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID recordId;
 
-  @JsonProperty("ec")
-  private String ec;
+    @JsonProperty("ec")
+    private String ec;
 
-  @JsonProperty("mid")
-  private UUID id;
+    @JsonProperty("mid")
+    private UUID id;
 
-  @JsonProperty("alias")
-  private String alias;
+    @JsonProperty("alias")
+    private String alias;
 
-  @JsonProperty("document_type")
-  private String documentType;
+    @JsonProperty("document_type")
+    private String documentType;
 
-  @JsonProperty("document_number")
-  private String documentNumber;
+    @JsonProperty("document_number")
+    private String documentNumber;
 
-  @JsonProperty("name")
-  private String name;
+    @JsonProperty("name")
+    private String name;
 
-  @JsonProperty("blocked")
-  private boolean blocked;
+    @JsonProperty("blocked")
+    private boolean blocked;
 
-  @JsonProperty("test_mode")
-  private boolean testModeEnabled;
+    @JsonProperty("test_mode")
+    private boolean testModeEnabled;
 
-  @JsonProperty("accept_international_card")
-  private boolean internationalPaymentEnabled;
+    @JsonProperty("accept_international_card")
+    private boolean internationalPaymentEnabled;
 
-  @JsonProperty("notification_url")
-  private String notificationUrl;
+    @JsonProperty("notification_url")
+    private String notificationUrl;
 
-  @JsonProperty("return_url")
-  private String returnUrl;
+    @JsonProperty("return_url")
+    private String returnUrl;
 
-  @JsonProperty("status_change_url")
-  private String statusChangeUrl;
+    @JsonProperty("status_change_url")
+    private String statusChangeUrl;
 
-  @JsonProperty("is_3ds_enabled")
-  private boolean threeDSEnabled;
+    @JsonProperty("is_3ds_enabled")
+    private boolean threeDSEnabled;
 
-  @JsonProperty("amex_mid")
-  private String amexMid;
+    @JsonProperty("amex_mid")
+    private String amexMid;
 
-  @JsonProperty("facial_auth_enabled")
-  private boolean facialAuthEnabled;
+    @JsonProperty("facial_auth_enabled")
+    private boolean facialAuthEnabled;
 
-  @CreationTimestamp private LocalDateTime recordTimestamp;
+    @CreationTimestamp
+    private LocalDateTime recordTimestamp;
 
-  public CheckoutCompletedAutomation() {}
+    public CheckoutCompletedAutomation() {}
 
-  public UUID getRecordId() {
-    return recordId;
-  }
+    public UUID getRecordId() {
+        return recordId;
+    }
 
-  public void setRecordId(UUID recordId) {
-    this.recordId = recordId;
-  }
+    public void setRecordId(UUID recordId) {
+        this.recordId = recordId;
+    }
 
-  public String getEc() {
-    return ec;
-  }
+    public String getEc() {
+        return ec;
+    }
 
-  public void setEc(String ec) {
-    this.ec = ec;
-  }
+    public void setEc(String ec) {
+        this.ec = ec;
+    }
 
-  public UUID getId() {
-    return id;
-  }
+    public UUID getId() {
+        return id;
+    }
 
-  public void setId(UUID id) {
-    this.id = id;
-  }
+    public void setId(UUID id) {
+        this.id = id;
+    }
 
-  public String getAlias() {
-    return alias;
-  }
+    public String getAlias() {
+        return alias;
+    }
 
-  public void setAlias(String alias) {
-    this.alias = alias;
-  }
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
 
-  public String getDocumentType() {
-    return documentType;
-  }
+    public String getDocumentType() {
+        return documentType;
+    }
 
-  public void setDocumentType(String documentType) {
-    this.documentType = documentType;
-  }
+    public void setDocumentType(String documentType) {
+        this.documentType = documentType;
+    }
 
-  public String getDocumentNumber() {
-    return documentNumber;
-  }
+    public String getDocumentNumber() {
+        return documentNumber;
+    }
 
-  public void setDocumentNumber(String documentNumber) {
-    this.documentNumber = documentNumber;
-  }
+    public void setDocumentNumber(String documentNumber) {
+        this.documentNumber = documentNumber;
+    }
 
-  public String getName() {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public void setName(String name) {
-    this.name = name;
-  }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-  public boolean isBlocked() {
-    return blocked;
-  }
+    public boolean isBlocked() {
+        return blocked;
+    }
 
-  public void setBlocked(boolean blocked) {
-    this.blocked = blocked;
-  }
+    public void setBlocked(boolean blocked) {
+        this.blocked = blocked;
+    }
 
-  public boolean isTestModeEnabled() {
-    return testModeEnabled;
-  }
+    public boolean isTestModeEnabled() {
+        return testModeEnabled;
+    }
 
-  public void setTestModeEnabled(boolean testModeEnabled) {
-    this.testModeEnabled = testModeEnabled;
-  }
+    public void setTestModeEnabled(boolean testModeEnabled) {
+        this.testModeEnabled = testModeEnabled;
+    }
 
-  public boolean isInternationalPaymentEnabled() {
-    return internationalPaymentEnabled;
-  }
+    public boolean isInternationalPaymentEnabled() {
+        return internationalPaymentEnabled;
+    }
 
-  public void setInternationalPaymentEnabled(boolean internationalPaymentEnabled) {
-    this.internationalPaymentEnabled = internationalPaymentEnabled;
-  }
+    public void setInternationalPaymentEnabled(boolean internationalPaymentEnabled) {
+        this.internationalPaymentEnabled = internationalPaymentEnabled;
+    }
 
-  public String getNotificationUrl() {
-    return notificationUrl;
-  }
+    public String getNotificationUrl() {
+        return notificationUrl;
+    }
 
-  public void setNotificationUrl(String notificationUrl) {
-    this.notificationUrl = notificationUrl;
-  }
+    public void setNotificationUrl(String notificationUrl) {
+        this.notificationUrl = notificationUrl;
+    }
 
-  public String getReturnUrl() {
-    return returnUrl;
-  }
+    public String getReturnUrl() {
+        return returnUrl;
+    }
 
-  public void setReturnUrl(String returnUrl) {
-    this.returnUrl = returnUrl;
-  }
+    public void setReturnUrl(String returnUrl) {
+        this.returnUrl = returnUrl;
+    }
 
-  public String getStatusChangeUrl() {
-    return statusChangeUrl;
-  }
+    public String getStatusChangeUrl() {
+        return statusChangeUrl;
+    }
 
-  public void setStatusChangeUrl(String statusChangeUrl) {
-    this.statusChangeUrl = statusChangeUrl;
-  }
+    public void setStatusChangeUrl(String statusChangeUrl) {
+        this.statusChangeUrl = statusChangeUrl;
+    }
 
-  public boolean isThreeDSEnabled() {
-    return threeDSEnabled;
-  }
+    public boolean isThreeDSEnabled() {
+        return threeDSEnabled;
+    }
 
-  public void setThreeDSEnabled(boolean threeDSEnabled) {
-    this.threeDSEnabled = threeDSEnabled;
-  }
+    public void setThreeDSEnabled(boolean threeDSEnabled) {
+        this.threeDSEnabled = threeDSEnabled;
+    }
 
-  public String getAmexMid() {
-    return amexMid;
-  }
+    public String getAmexMid() {
+        return amexMid;
+    }
 
-  public void setAmexMid(String amexMid) {
-    this.amexMid = amexMid;
-  }
+    public void setAmexMid(String amexMid) {
+        this.amexMid = amexMid;
+    }
 
-  public boolean isFacialAuthEnabled() {
-    return facialAuthEnabled;
-  }
+    public boolean isFacialAuthEnabled() {
+        return facialAuthEnabled;
+    }
 
-  public void setFacialAuthEnabled(boolean facialAuthEnabled) {
-    this.facialAuthEnabled = facialAuthEnabled;
-  }
+    public void setFacialAuthEnabled(boolean facialAuthEnabled) {
+        this.facialAuthEnabled = facialAuthEnabled;
+    }
 
-  public LocalDateTime getRecordTimestamp() {
-    return recordTimestamp;
-  }
+    public LocalDateTime getRecordTimestamp() {
+        return recordTimestamp;
+    }
 
-  public void setRecordTimestamp(LocalDateTime recordTimestamp) {
-    this.recordTimestamp = recordTimestamp;
-  }
+    public void setRecordTimestamp(LocalDateTime recordTimestamp) {
+        this.recordTimestamp = recordTimestamp;
+    }
 }

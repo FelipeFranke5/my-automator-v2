@@ -10,27 +10,26 @@ import org.springframework.stereotype.Service;
 @Service
 public class CheckoutFailedAutomationService {
 
-  private static final Logger LOG = LoggerFactory.getLogger(CheckoutFailedAutomationService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CheckoutFailedAutomationService.class);
 
-  private final CheckoutFailedAutomationRepository failedAutomationRepository;
+    private final CheckoutFailedAutomationRepository failedAutomationRepository;
 
-  public CheckoutFailedAutomationService(
-      final CheckoutFailedAutomationRepository failedAutomationRepository) {
-    this.failedAutomationRepository = failedAutomationRepository;
-  }
-
-  public void save(final String ecNumber, final String message) {
-    try {
-      LOG.info("[{}] Attempting to save", ecNumber);
-      failedAutomationRepository.save(new CheckoutFailedAutomation(ecNumber, message));
-      LOG.info("[{}] Saved", ecNumber);
-    } catch (final Exception exception) {
-      LOG.warn("[{}] There was an error while trying to save", ecNumber);
-      LOG.error("[{}] Error while trying to save", ecNumber, exception);
+    public CheckoutFailedAutomationService(final CheckoutFailedAutomationRepository failedAutomationRepository) {
+        this.failedAutomationRepository = failedAutomationRepository;
     }
-  }
 
-  public List<CheckoutFailedAutomation> getAll() {
-    return failedAutomationRepository.findAll();
-  }
+    public void save(final String ecNumber, final String message) {
+        try {
+            LOG.info("[{}] Attempting to save", ecNumber);
+            failedAutomationRepository.save(new CheckoutFailedAutomation(ecNumber, message));
+            LOG.info("[{}] Saved", ecNumber);
+        } catch (final Exception exception) {
+            LOG.warn("[{}] There was an error while trying to save", ecNumber);
+            LOG.error("[{}] Error while trying to save", ecNumber, exception);
+        }
+    }
+
+    public List<CheckoutFailedAutomation> getAll() {
+        return failedAutomationRepository.findAll();
+    }
 }

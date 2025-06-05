@@ -3,5 +3,5 @@ package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dt
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record AutomationsRunningOutput(
-    @JsonProperty("automacoesSendoExecutadas") byte numberOfAutomations,
-    @JsonProperty("mensagem") String message) {}
+        @JsonProperty("automacoesSendoExecutadas") byte numberOfAutomations,
+        @JsonProperty("mensagem") String message) {}
