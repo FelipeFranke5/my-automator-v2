@@ -41,8 +41,23 @@ Braspag Automator V2 é uma aplicação Spring Boot projetada para automatizar a
 - `GET /api/v1/retrieve-merchant` — Lista estabelecimentos e status da automação.
 - `GET /api/v1/retrieve-merchant/email` — Envia relatório Excel por e-mail.
 - `DELETE /api/v1/retrieve-merchant` — Exclui todos os registros de estabelecimentos.
+- `GET /api/v1/retrieve-merchant/failed` — Lista automações de estabelecimentos que falharam.
+- `DELETE /api/v1/retrieve-merchant/failed` — Limpa registros de falhas de automação de estabelecimentos.
+
+- `POST /api/v1/checkout/retrieve-merchant` — Inicia automação de checkout para um ou mais ECs.
+- `GET /api/v1/checkout/retrieve-merchant` — Lista ECs e status da automação de checkout.
+- `GET /api/v1/checkout/retrieve-merchant/email` — Envia relatório Excel de checkout por e-mail.
+- `DELETE /api/v1/checkout/retrieve-merchant` — Exclui todos os registros de automação de checkout.
+- `GET /api/v1/checkout/retrieve-merchant/failed` — Lista automações de checkout que falharam.
+- `DELETE /api/v1/checkout/retrieve-merchant/failed` — Limpa registros de falhas de automação de checkout.
+
 - `POST /api/v1/checkout/enable-3ds` — Habilita 3DS para um ou mais ECs.
-- `GET /api/v1/checkout/enable-3ds` — Consulta resultados da habilitação 3DS.
+- `GET /api/v1/checkout/enable-3ds` — Consulta resultados da habilitação 3DS (string).
+- `GET /api/v1/checkout/enable-3ds/text` — Consulta resultados da habilitação 3DS (string).
+- `GET /api/v1/checkout/enable-3ds/json` — Consulta resultados da habilitação 3DS (JSON detalhado).
+- `DELETE /api/v1/checkout/enable-3ds` — Exclui todos os registros de habilitação 3DS.
+- `GET /api/v1/checkout/enable-3ds/failed` — Lista ECs que falharam na habilitação 3DS.
+- `DELETE /api/v1/checkout/enable-3ds/failed` — Limpa registros de falhas de habilitação 3DS.
 
 ## Estrutura do Projeto
 - `src/main/java/.../controller` — Controllers REST
@@ -50,51 +65,5 @@ Braspag Automator V2 é uma aplicação Spring Boot projetada para automatizar a
 - `src/main/java/.../model` — Entidades JPA
 - `src/main/java/.../dto` — Objetos de transferência de dados
 - `python/` — Scripts Python para extração de dados
-
----
-
-## Endpoints de Habilitação de 3DS (Checkout)
-
-### Habilitar 3DS para um ou mais ECs
-
-`POST /api/v1/checkout/enable-3ds`
-
-- **Descrição:** Inicia a automação para habilitar 3DS no Checkout para um ou mais ECs informados.
-- **Requer Autorização:** Header `Authorization: Base64 <base64(login:senha)>`
-- **Body:**
-
-```json
-{
-  "ecs": ["1234567890", "0987654321"]
-}
-```
-
-- **Respostas:**
-  - `201 Created`: Execução iniciada com sucesso.
-
-    ```json
-    {
-      "data": "2025-05-31T12:34:56",
-      "mensagem": "A sua execucao foi iniciada e esta em andamento"
-    }
-    ```
-  - `400 Bad Request`: Um ou mais ECs inválidos.
-
-    ```json
-    {
-      "data": "2025-05-31T12:34:56",
-      "mensagem": "Um dos ECs informados nao e valido"
-    }
-    ```
-  - `401 Unauthorized`: Header de autorização inválido ou ausente.
-
-### Consultar resultados da habilitação 3DS
-
-`GET /api/v1/checkout/enable-3ds`
-
-- **Descrição:** Retorna os resultados das últimas execuções de habilitação de 3DS para os ECs processados.
-- **Requer Autorização:** Header `Authorization: Base64 <base64(login:senha)>`
-- **Resposta:**
-  - `200 OK`: String com ECs e status da automação.
 
 ---
