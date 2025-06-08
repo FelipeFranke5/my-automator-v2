@@ -11,9 +11,11 @@ import org.springframework.stereotype.Service;
 public class Enable3DSFailService {
 
     private final Enable3DSFailRepository repository;
+    private final Enable3DSResultService successfulResultsService;
 
-    public Enable3DSFailService(Enable3DSFailRepository repository) {
+    public Enable3DSFailService(Enable3DSFailRepository repository, Enable3DSResultService successfulResultsService) {
         this.repository = repository;
+        this.successfulResultsService = successfulResultsService;
     }
 
     private boolean resultIsValid(String result) {
@@ -31,7 +33,7 @@ public class Enable3DSFailService {
         if (failOptional.isPresent()) return false;
 
         try {
-            return Long.parseLong(ec) > 0;
+            return Long.parseLong(ec) > 0 && !successfulResultsService.existsByEc(ec);
         } catch (NumberFormatException numberFormatException) {
             return false;
         }
