@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 public class CheckoutMailSender {
 
     private static final Logger LOG = LoggerFactory.getLogger(CheckoutMailSender.class);
-    private static final ExecutorService executor = Executors.newFixedThreadPool(2);
+    private static final ExecutorService executor = Executors.newFixedThreadPool(4);
 
     private final JavaMailSender mailSender;
     private final CheckoutFileHandler fileHandler;
