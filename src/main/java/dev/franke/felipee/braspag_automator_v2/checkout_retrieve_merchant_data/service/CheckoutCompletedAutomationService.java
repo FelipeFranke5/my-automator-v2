@@ -83,4 +83,8 @@ public class CheckoutCompletedAutomationService {
     public void deleteAll() {
         repository.deleteAll();
     }
+
+    public boolean existsByEc(String ec) {
+        return repository.existsByEc(ec);
+    }
 }

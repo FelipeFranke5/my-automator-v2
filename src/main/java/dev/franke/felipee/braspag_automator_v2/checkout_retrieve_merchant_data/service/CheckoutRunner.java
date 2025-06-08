@@ -61,28 +61,36 @@ public class CheckoutRunner {
 
     private void validateAndRun(final String[] merchantEcNumbers) {
         if (!validator.allEcsAreValid(merchantEcNumbers)) {
-            final String invalidEcs = Arrays.stream(merchantEcNumbers)
-                    .filter(ec -> !validator.allEcsAreValid(new String[] {ec}))
-                    .collect(Collectors.joining(", "));
-            final String errorMessage = "ECs invalidos: " + invalidEcs;
-            failedAutomationService.save("ECs invalidos", errorMessage);
+            invalidEcsRoutine(merchantEcNumbers);
             return;
         }
 
         final Set<String> ecNumbersSet = convertArrayToSet(merchantEcNumbers);
+        ecNumbersSet.forEach(ecNumber -> CompletableFuture.runAsync(() -> singleEcAsyncRoutine(ecNumber), executor));
+    }
 
-        ecNumbersSet.forEach(ecNumber -> CompletableFuture.runAsync(
-                () -> {
-                    final byte result = singleEcRun(ecNumber);
-                    if (result == 0) {
-                        final var data = fileHandler.getMerchantDataFromFile(ecNumber);
-                        data.ifPresentOrElse(
-                                automationService::save,
-                                () -> failedAutomationService.save(ecNumber, "Erro de execucao"));
-                    }
-                    fileHandler.deleteJsonFileAfterAutomation(ecNumber);
-                },
-                executor));
+    private void invalidEcsRoutine(final String[] merchantEcNumbers) {
+        final String invalidEcs = Arrays.stream(merchantEcNumbers)
+                .filter(ec -> !validator.allEcsAreValid(new String[] {ec}))
+                .collect(Collectors.joining(", "));
+        final String errorMessage = "ECs invalidos: " + invalidEcs;
+        failedAutomationService.save("ECs invalidos", errorMessage);
+    }
+
+    private void singleEcAsyncRoutine(String ecNumber) {
+        if (automationService.existsByEc(ecNumber)) {
+            LOG.warn("A task with this EC number was executed already");
+            return;
+        }
+
+        final byte result = singleEcRun(ecNumber);
+
+        if (result == 0) {
+            final var data = fileHandler.getMerchantDataFromFile(ecNumber);
+            data.ifPresentOrElse(
+                    automationService::save, () -> failedAutomationService.save(ecNumber, "Erro de execucao"));
+        }
+        fileHandler.deleteJsonFileAfterAutomation(ecNumber);
     }
 
     private byte singleEcRun(final String ecNumber) {
@@ -90,6 +98,7 @@ public class CheckoutRunner {
 
         try {
             final String lastLine = processExecutionCheckoutData.run(ecNumber);
+
             if (lastLine.equals("Merchant Wrote")) {
                 finalResult = 0;
             } else {

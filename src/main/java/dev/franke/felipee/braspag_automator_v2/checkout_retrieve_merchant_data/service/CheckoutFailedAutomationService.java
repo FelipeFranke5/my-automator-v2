@@ -15,9 +15,13 @@ public class CheckoutFailedAutomationService {
     private static final Logger LOG = LoggerFactory.getLogger(CheckoutFailedAutomationService.class);
 
     private final CheckoutFailedAutomationRepository repository;
+    private final CheckoutCompletedAutomationService completedAutomationService;
 
-    public CheckoutFailedAutomationService(CheckoutFailedAutomationRepository repository) {
+    public CheckoutFailedAutomationService(
+            CheckoutFailedAutomationRepository repository,
+            CheckoutCompletedAutomationService completedAutomationService) {
         this.repository = repository;
+        this.completedAutomationService = completedAutomationService;
     }
 
     private boolean resultIsValid(String result) {
@@ -35,7 +39,7 @@ public class CheckoutFailedAutomationService {
         if (failOptional.isPresent()) return false;
 
         try {
-            return Long.parseLong(ec) > 0;
+            return Long.parseLong(ec) > 0 && !completedAutomationService.existsByEc(ec);
         } catch (NumberFormatException numberFormatException) {
             return false;
         }

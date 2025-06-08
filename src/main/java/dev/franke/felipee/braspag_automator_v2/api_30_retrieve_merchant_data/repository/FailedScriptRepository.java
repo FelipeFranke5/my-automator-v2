@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface FailedScriptRepository extends JpaRepository<FailedScriptRecord, UUID> {}
+public interface FailedScriptRepository extends JpaRepository<FailedScriptRecord, UUID> {
+    boolean existsByEcNumber(String ecNumber);
+}

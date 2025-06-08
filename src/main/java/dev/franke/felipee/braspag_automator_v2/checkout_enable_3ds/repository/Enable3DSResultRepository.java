@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface Enable3DSResultRepository extends JpaRepository<Enable3DSResult, UUID> {
     Optional<Enable3DSResult> findByEc(String ec);
+
+    boolean existsByEc(String ec);
 }

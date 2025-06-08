@@ -1,5 +1,6 @@
 package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service;
 
+import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dto.failed.FailedAutomationOutput;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.model.FailedScriptRecord;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.repository.FailedScriptRepository;
 import java.util.List;
@@ -13,19 +14,31 @@ public class FailedScriptService {
     private static final Logger LOG = LoggerFactory.getLogger(FailedScriptService.class);
 
     private final FailedScriptRepository failedScriptRepository;
+    private final MerchantService merchantService;
 
-    public FailedScriptService(FailedScriptRepository failedScriptRepository) {
+    public FailedScriptService(FailedScriptRepository failedScriptRepository, MerchantService merchantService) {
         this.failedScriptRepository = failedScriptRepository;
+        this.merchantService = merchantService;
     }
 
     public void save(String ecNumber, String message) {
+        if (merchantService.existsByEc(ecNumber)) {
+            LOG.warn("Already registered in the completed automations. Not Saving record");
+            return;
+        }
+
+        if (existsByEcNumber(ecNumber)) {
+            LOG.warn("Already registered. Not Saving record");
+            return;
+        }
+
         if (ecNumber == null || ecNumber.isBlank()) {
-            LOG.warn("EC Number is null or blank, not saving record.");
+            LOG.warn("EC Number is null or blank, not saving record");
             return;
         }
 
         if (message == null || message.isBlank()) {
-            LOG.warn("Message is null or blank, not saving record.");
+            LOG.warn("Message is null or blank, not saving record");
             return;
         }
 
@@ -39,8 +52,22 @@ public class FailedScriptService {
         }
     }
 
-    public List<FailedScriptRecord> findAll() {
-        LOG.info("Retrieving all failed script records.");
+    public List<FailedAutomationOutput> jsonOutput() {
+        return findAll().stream()
+                .map(result -> new FailedAutomationOutput(
+                        result.getId(), result.getEcNumber(), result.getMessage(), result.getRecordTimestamp()))
+                .toList();
+    }
+
+    public void deleteAll() {
+        failedScriptRepository.deleteAll();
+    }
+
+    public boolean existsByEcNumber(String ecNumber) {
+        return failedScriptRepository.existsByEcNumber(ecNumber);
+    }
+
+    private List<FailedScriptRecord> findAll() {
         return failedScriptRepository.findAll();
     }
 }

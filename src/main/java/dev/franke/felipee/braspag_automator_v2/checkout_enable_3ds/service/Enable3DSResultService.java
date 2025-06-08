@@ -84,6 +84,10 @@ public class Enable3DSResultService {
         enable3dsResultRepository.deleteAll();
     }
 
+    public boolean existsByEc(String ec) {
+        return enable3dsResultRepository.existsByEc(ec);
+    }
+
     private List<Enable3DSResult> allResults() {
         return enable3dsResultRepository.findAll();
     }
