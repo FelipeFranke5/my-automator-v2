@@ -1,6 +1,5 @@
 package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,13 +15,10 @@ public class FailedScriptRecord {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @JsonProperty("numeroEc")
     private String ecNumber;
 
-    @JsonProperty("mensagem")
     private String message;
 
-    @JsonProperty("dataRegistro")
     @CreationTimestamp
     private LocalDateTime recordTimestamp;
 
