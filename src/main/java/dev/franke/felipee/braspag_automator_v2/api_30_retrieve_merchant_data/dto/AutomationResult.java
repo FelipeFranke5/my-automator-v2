@@ -1,3 +1,5 @@
 package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dto;
 
-public record AutomationResult(String message) {}
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public record AutomationResult(@JsonProperty("mensagemRetorno") String message) {}
