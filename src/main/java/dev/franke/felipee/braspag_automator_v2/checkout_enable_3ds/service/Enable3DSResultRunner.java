@@ -2,15 +2,23 @@ package dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.service;
 
 import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.service.utils.ProcessExecutionEnable3DS;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class Enable3DSResultRunner {
+
+    // Generic function to convert array to set
+    public static <T> Set<T> convertArrayToSet(final T[] array) {
+        return Arrays.stream(array).collect(Collectors.toSet());
+    }
 
     private static final Logger LOG = LoggerFactory.getLogger(Enable3DSResultRunner.class);
     private static final ExecutorService executor = Executors.newFixedThreadPool(4);
@@ -49,20 +57,27 @@ public class Enable3DSResultRunner {
         }
 
         LOG.info("List is valid");
-
-        CompletableFuture.runAsync(
-                () -> {
-                    for (final String ec : ecs) {
-
-                        CompletableFuture.runAsync(() -> singleEcAutomation(ec), executor);
-                    }
-                },
-                executor);
-
+        CompletableFuture.runAsync(() -> runAllAutomations(ecs), executor);
         LOG.info("Ran");
     }
 
+    private void runAllAutomations(String[] ecArray) {
+        var ecs = getEcNumberSet(ecArray);
+        ecs.forEach(this::singleEcAutomation);
+    }
+
+    private Set<String> getEcNumberSet(String[] ecNumbers) {
+        return convertArrayToSet(ecNumbers);
+    }
+
     private void singleEcAutomation(final String ec) {
+        if (enable3dsResultService.existsByEc(ec)) {
+            LOG.warn("[{}] Automation is not going to be executed", ec);
+            LOG.warn("[{}] Already executed this task", ec);
+            return;
+        }
+
+        LOG.info("[{}] Automation is going to be executed", ec);
         final String message = getResultMessageFromExecutionLastLine(getLastLine(ec));
 
         if (message.equals(SUCESS_MESSAGE) || message.equals(ALREADY_ENABLED_MESSAGE)) {
