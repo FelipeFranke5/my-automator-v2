@@ -1,6 +1,7 @@
 package dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.service;
 
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.MerchantValidator;
+import dev.franke.felipee.braspag_automator_v2.contracts.service.EcSearchMailSender;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.io.IOException;
@@ -17,7 +18,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CheckoutMailSender {
+public class CheckoutMailSender implements EcSearchMailSender {
 
     private static final Logger LOG = LoggerFactory.getLogger(CheckoutMailSender.class);
     private static final ExecutorService executor = Executors.newFixedThreadPool(4);
@@ -27,13 +28,14 @@ public class CheckoutMailSender {
     private final MerchantValidator validator;
 
     public CheckoutMailSender(
-            final JavaMailSender mailSender, final CheckoutFileHandler fileHandler, final MerchantValidator validator) {
+            final JavaMailSender mailSender, CheckoutFileHandler fileHandler, MerchantValidator validator) {
         this.mailSender = mailSender;
         this.fileHandler = fileHandler;
         this.validator = validator;
     }
 
-    public byte sendEmailWithExcelResults(final String emailAddress) {
+    @Override
+    public byte sendEmailWithExcelResults(String emailAddress) {
         LOG.info("Initializing service - Write to Excel and Send Email");
 
         if (!validator.validEmail(emailAddress)) {
@@ -45,7 +47,7 @@ public class CheckoutMailSender {
         return 0;
     }
 
-    private void asyncEmailWithExcelData(final String emailAddress) {
+    private void asyncEmailWithExcelData(String emailAddress) {
         CompletableFuture.runAsync(
                 () -> {
                     final Optional<byte[]> optionalExcelBytes = writeToExcel();
@@ -65,16 +67,16 @@ public class CheckoutMailSender {
     }
 
     // In case of success
-    private void sendEmail(final byte[] excelBytes, final String emailAddress) {
+    private void sendEmail(byte[] excelBytes, String emailAddress) {
         sendEmailWithResults(excelBytes, emailAddress);
     }
 
     // In case of failure
-    private void sendEmail(final String emailAddress) {
+    private void sendEmail(String emailAddress) {
         sendEmailInformingFailure(emailAddress);
     }
 
-    public Optional<byte[]> writeToExcel() {
+    private Optional<byte[]> writeToExcel() {
         try {
             final byte[] excelBytes = fileHandler.writeToExcelFile();
             return Optional.of(excelBytes);
@@ -84,7 +86,7 @@ public class CheckoutMailSender {
         }
     }
 
-    public void sendEmailInformingFailure(final String emailAddressTo) {
+    private void sendEmailInformingFailure(String emailAddressTo) {
         LOG.info("Initialized service to send Email for failure result");
 
         try {
@@ -107,7 +109,7 @@ public class CheckoutMailSender {
         }
     }
 
-    public void sendEmailWithResults(final byte[] excelBytes, final String emailAddressTo) {
+    private void sendEmailWithResults(byte[] excelBytes, String emailAddressTo) {
         LOG.info("Initialized service to send Email for sucessful result");
 
         try {
