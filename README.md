@@ -37,24 +37,24 @@ Braspag Automator V2 é uma aplicação Spring Boot projetada para automatizar a
 4. **Uso da API**: Interaja com a API REST usando ferramentas como Postman ou curl. Todos os endpoints exigem header `Authorization`.
 
 ## Endpoints da API
+
+### EC Retrieve Merchant
 - `POST /api/v1/retrieve-merchant` — Inicia automação para um ou mais estabelecimentos.
 - `GET /api/v1/retrieve-merchant` — Lista estabelecimentos e status da automação.
-- `GET /api/v1/retrieve-merchant/email` — Envia relatório Excel por e-mail.
 - `DELETE /api/v1/retrieve-merchant` — Exclui todos os registros de estabelecimentos.
 - `GET /api/v1/retrieve-merchant/failed` — Lista automações de estabelecimentos que falharam.
 - `DELETE /api/v1/retrieve-merchant/failed` — Limpa registros de falhas de automação de estabelecimentos.
 
+### Checkout Retrieve Merchant
 - `POST /api/v1/checkout/retrieve-merchant` — Inicia automação de checkout para um ou mais ECs.
 - `GET /api/v1/checkout/retrieve-merchant` — Lista ECs e status da automação de checkout.
-- `GET /api/v1/checkout/retrieve-merchant/email` — Envia relatório Excel de checkout por e-mail.
 - `DELETE /api/v1/checkout/retrieve-merchant` — Exclui todos os registros de automação de checkout.
 - `GET /api/v1/checkout/retrieve-merchant/failed` — Lista automações de checkout que falharam.
 - `DELETE /api/v1/checkout/retrieve-merchant/failed` — Limpa registros de falhas de automação de checkout.
 
+### Checkout Enable 3DS
 - `POST /api/v1/checkout/enable-3ds` — Habilita 3DS para um ou mais ECs.
-- `GET /api/v1/checkout/enable-3ds` — Consulta resultados da habilitação 3DS (string).
-- `GET /api/v1/checkout/enable-3ds/text` — Consulta resultados da habilitação 3DS (string).
-- `GET /api/v1/checkout/enable-3ds/json` — Consulta resultados da habilitação 3DS (JSON detalhado).
+- `GET /api/v1/checkout/enable-3ds` — Consulta resultados da habilitação 3DS (JSON).
 - `DELETE /api/v1/checkout/enable-3ds` — Exclui todos os registros de habilitação 3DS.
 - `GET /api/v1/checkout/enable-3ds/failed` — Lista ECs que falharam na habilitação 3DS.
 - `DELETE /api/v1/checkout/enable-3ds/failed` — Limpa registros de falhas de habilitação 3DS.
