@@ -3,13 +3,14 @@ package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.se
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dto.failed.FailedAutomationOutput;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.model.FailedScriptRecord;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.repository.FailedScriptRepository;
+import dev.franke.felipee.braspag_automator_v2.contracts.service.EcSearchFailedMainService;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class FailedScriptService {
+public class FailedScriptService implements EcSearchFailedMainService {
 
     private static final Logger LOG = LoggerFactory.getLogger(FailedScriptService.class);
 
@@ -21,6 +22,7 @@ public class FailedScriptService {
         this.merchantService = merchantService;
     }
 
+    @Override
     public void save(String ecNumber, String message) {
         if (merchantService.existsByEc(ecNumber)) {
             LOG.warn("Already registered in the completed automations. Not Saving record");
@@ -52,6 +54,7 @@ public class FailedScriptService {
         }
     }
 
+    @Override
     public List<FailedAutomationOutput> jsonOutput() {
         return findAll().stream()
                 .map(result -> new FailedAutomationOutput(
@@ -59,6 +62,7 @@ public class FailedScriptService {
                 .toList();
     }
 
+    @Override
     public void deleteAll() {
         failedScriptRepository.deleteAll();
     }
