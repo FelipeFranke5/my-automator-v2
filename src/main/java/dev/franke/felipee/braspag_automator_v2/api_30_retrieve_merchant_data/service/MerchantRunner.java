@@ -80,7 +80,7 @@ public class MerchantRunner implements AutomationRunner {
 
         result.ifPresent(res -> {
             LOG.info("[{}] Automation Result is present. Saving to database", ec);
-            service.saveMerchantToDatabase(res);
+            service.save(res);
         });
     }
 
