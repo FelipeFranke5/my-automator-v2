@@ -2,6 +2,7 @@ package dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.
 
 import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.service.CheckoutMerchantValidator;
 import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.service.utils.ProcessExecutionCheckoutData;
+import dev.franke.felipee.braspag_automator_v2.contracts.service.AutomationRunner;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
@@ -14,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CheckoutRunner {
+public class CheckoutRunner implements AutomationRunner {
 
     // Generic function to convert array to set
     public static <T> Set<T> convertArrayToSet(final T[] array) {
@@ -53,6 +54,7 @@ public class CheckoutRunner {
         this.automationService = automationService;
     }
 
+    @Override
     public void run(final String[] merchantEcNumbers) {
         CompletableFuture.runAsync(() -> validateAndRun(merchantEcNumbers), executor);
     }

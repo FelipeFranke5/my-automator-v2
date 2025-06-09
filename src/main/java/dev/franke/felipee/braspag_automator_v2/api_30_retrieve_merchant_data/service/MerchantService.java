@@ -3,13 +3,14 @@ package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.se
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dto.successful.SuccessfulAutomationOutput;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.model.Merchant;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.repository.MerchantRepository;
+import dev.franke.felipee.braspag_automator_v2.contracts.service.EcSearchMainService;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class MerchantService {
+public class MerchantService implements EcSearchMainService {
 
     private static final Logger LOG = LoggerFactory.getLogger(MerchantService.class);
 
@@ -21,6 +22,12 @@ public class MerchantService {
         this.runner = runner;
     }
 
+    @Override
+    public List<Merchant> findAll() {
+        return merchantRepository.findAll();
+    }
+
+    @Override
     public List<SuccessfulAutomationOutput> jsonOutput() {
         return merchantRepository.findAll().stream()
                 .map(merchant -> new SuccessfulAutomationOutput(
@@ -28,26 +35,30 @@ public class MerchantService {
                 .toList();
     }
 
-    public void clearAllMerchants() {
+    @Override
+    public void clear() {
         LOG.info("Clearing all merchants from database");
         merchantRepository.deleteAll();
     }
 
-    public void saveMerchantToDatabase(Merchant merchant) {
+    @Override
+    public void save(Object merchant) {
+        var data = (Merchant) merchant;
         LOG.info("Attempting to save record");
         try {
-            merchantRepository.save(merchant);
+            merchantRepository.save(data);
             LOG.info("Record saved");
         } catch (Exception exception) {
             LOG.error("Error during save", exception);
         }
     }
 
-    public boolean existsByEc(String ec) {
-        return merchantRepository.existsByEc(ec);
+    @Override
+    public void runAutomation(String[] merchants) {
+        runner.run(merchants);
     }
 
-    public void runAutomation(String merchants) {
-        runner.runAutomation(merchants);
+    public boolean existsByEc(String ec) {
+        return merchantRepository.existsByEc(ec);
     }
 }

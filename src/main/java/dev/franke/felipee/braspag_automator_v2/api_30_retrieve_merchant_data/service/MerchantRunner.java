@@ -7,6 +7,7 @@ import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.exc
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.exception.ScriptLastLineIsStdErrorException;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.model.Merchant;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.utils.ProcessExecutionAPI30;
+import dev.franke.felipee.braspag_automator_v2.contracts.service.AutomationRunner;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -21,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class MerchantRunner {
+public class MerchantRunner implements AutomationRunner {
 
     // Generic function to convert array to set
     public static <T> Set<T> convertArrayToSet(final T[] array) {
@@ -53,38 +54,17 @@ public class MerchantRunner {
         this.failedScriptService = failedScriptService;
     }
 
-    public void runAutomation(String merchants) {
-        runAllAutomations(merchants);
-    }
-
-    public boolean inputIsValid(String merchants) {
-        LOG.info("Validating input: {}", merchants);
-        return validator.validInput(merchants);
-    }
-
-    private void runAllAutomations(String merchants) {
-        LOG.info("Starting Automation!");
+    @Override
+    public void run(String[] merchantEcNumbers) {
         CompletableFuture.runAsync(
                 () -> {
-                    if (!(inputIsValid(merchants))) {
-                        LOG.warn("Input is not valid. Returning right now");
-                        failedScriptService.save("INVALIDO", "ECs invalidos");
+                    if (!validator.merchantArrayIsValid(merchantEcNumbers)) {
+                        LOG.warn("Invalid input");
+                        // TODO: save to err
                         return;
                     }
-
-                    runAutomationDependingOnLength(merchants);
-                },
-                executor);
-    }
-
-    private void runAutomationDependingOnLength(String merchants) {
-        CompletableFuture.runAsync(
-                () -> {
-                    if (merchants.length() > 10) {
-                        runAutomationForMultipleMerchants(merchants);
-                    } else {
-                        runAutomationForSingleMerchant(merchants);
-                    }
+                    Set<String> ecs = getEcSet(merchantEcNumbers);
+                    ecs.forEach(this::runAutomationForSingleMerchant);
                 },
                 executor);
     }
@@ -137,13 +117,6 @@ public class MerchantRunner {
 
     private Set<String> getEcSet(String[] ecs) {
         return convertArrayToSet(ecs);
-    }
-
-    private void runAutomationForMultipleMerchants(String merchants) {
-        LOG.info("Multiple EC's identified");
-        String[] merchantsArray = merchants.split(",");
-        Set<String> ecs = getEcSet(merchantsArray);
-        ecs.forEach(this::runAutomationForSingleMerchant);
     }
 
     private void ensureLastLineValid(String ec) throws IOException {

@@ -2,53 +2,62 @@ package dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.controller;
 
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.controller.HeaderValidator;
 import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.service.CheckoutMerchantValidator;
-import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.service.Enable3DSResultRunner;
 import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.service.Enable3DSResultService;
-import java.time.LocalDateTime;
+import dev.franke.felipee.braspag_automator_v2.contracts.controller.EcSearchMainController;
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/checkout/enable-3ds")
-public class Enable3DSResultController {
+public class Enable3DSResultController implements EcSearchMainController {
 
-    private static final String INVALID_EC_MESSAGE = "Um dos ECs informados nao e valido";
-    private static final String EXECUTION_MADE_MESSAGE = "A sua execucao foi iniciada e esta em andamento";
-
-    private final Enable3DSResultRunner enable3dsResultRunner;
     private final HeaderValidator headerValidator;
     private final CheckoutMerchantValidator checkoutMerchantValidator;
     private final Enable3DSResultService enable3dsResultService;
 
     public Enable3DSResultController(
-            Enable3DSResultRunner enable3dsResultRunner,
             HeaderValidator headerValidator,
             CheckoutMerchantValidator checkoutMerchantValidator,
             Enable3DSResultService enable3dsResultService) {
-        this.enable3dsResultRunner = enable3dsResultRunner;
         this.headerValidator = headerValidator;
         this.checkoutMerchantValidator = checkoutMerchantValidator;
         this.enable3dsResultService = enable3dsResultService;
     }
 
+    @Override
     @PostMapping
-    public ResponseEntity<?> executeAutomation(
-            @RequestBody AutomationRequestBody requestBody,
-            @RequestHeader(name = "Authorization") String authorizationHeader) {
+    public ResponseEntity<Void> executeAutomation(
+            @RequestBody String[] ecs, @RequestHeader(name = "Authorization") String authorizationHeader) {
         if (!headerValidator.headerIsValid(authorizationHeader)) {
             return ResponseEntity.status(401).build();
         }
 
-        if (!checkoutMerchantValidator.allEcsAreValid(requestBody.ecs())) {
-            CheckoutEnable3dsResponseBody invalidEcResponseBody =
-                    new CheckoutEnable3dsResponseBody(LocalDateTime.now(), INVALID_EC_MESSAGE);
-            return ResponseEntity.badRequest().body(invalidEcResponseBody);
+        if (!checkoutMerchantValidator.allEcsAreValid(ecs)) {
+            return ResponseEntity.badRequest().build();
         }
 
-        enable3dsResultRunner.run(requestBody.ecs());
-        CheckoutEnable3dsResponseBody validEcResponseBody =
-                new CheckoutEnable3dsResponseBody(LocalDateTime.now(), EXECUTION_MADE_MESSAGE);
-        return ResponseEntity.status(201).body(validEcResponseBody);
+        enable3dsResultService.runAutomation(ecs);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    @GetMapping
+    public ResponseEntity<List<?>> getResultsInJson(@RequestHeader(name = "Authorization") String authorizationHeader) {
+        if (!headerValidator.headerIsValid(authorizationHeader)) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(enable3dsResultService.jsonOutput());
+    }
+
+    @Override
+    @DeleteMapping
+    public ResponseEntity<Void> deleteResults(@RequestHeader(name = "Authorization") String authorizationHeader) {
+        if (!headerValidator.headerIsValid(authorizationHeader)) {
+            return ResponseEntity.status(401).build();
+        }
+        enable3dsResultService.clear();
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/text")
@@ -57,22 +66,5 @@ public class Enable3DSResultController {
             return ResponseEntity.status(401).build();
         }
         return ResponseEntity.ok(enable3dsResultService.resultsInString());
-    }
-
-    @GetMapping("/json")
-    public ResponseEntity<?> getResultsJson(@RequestHeader(name = "Authorization") String authorizationHeader) {
-        if (!headerValidator.headerIsValid(authorizationHeader)) {
-            return ResponseEntity.status(401).build();
-        }
-        return ResponseEntity.ok(enable3dsResultService.resultsJson());
-    }
-
-    @DeleteMapping
-    public ResponseEntity<Void> deleteAll(@RequestHeader(name = "Authorization") String authorizationHeader) {
-        if (!headerValidator.headerIsValid(authorizationHeader)) {
-            return ResponseEntity.status(401).build();
-        }
-        enable3dsResultService.deleteAll();
-        return ResponseEntity.noContent().build();
     }
 }

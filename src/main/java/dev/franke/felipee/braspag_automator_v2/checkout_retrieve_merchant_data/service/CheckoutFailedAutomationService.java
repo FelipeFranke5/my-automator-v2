@@ -3,6 +3,7 @@ package dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.
 import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.dto.ResultOutput;
 import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.model.CheckoutFailedAutomation;
 import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.repository.CheckoutFailedAutomationRepository;
+import dev.franke.felipee.braspag_automator_v2.contracts.service.EcSearchFailedMainService;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -10,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CheckoutFailedAutomationService {
+public class CheckoutFailedAutomationService implements EcSearchFailedMainService {
 
     private static final Logger LOG = LoggerFactory.getLogger(CheckoutFailedAutomationService.class);
 
@@ -22,6 +23,34 @@ public class CheckoutFailedAutomationService {
             CheckoutCompletedAutomationService completedAutomationService) {
         this.repository = repository;
         this.completedAutomationService = completedAutomationService;
+    }
+
+    @Override
+    public void save(String ecNumber, String message) {
+        if (ecIsValid(ecNumber) && resultIsValid(message)) {
+            try {
+                LOG.info("[{}] Attempting to save", ecNumber);
+                repository.save(new CheckoutFailedAutomation(ecNumber, message));
+                LOG.info("[{}] Saved", ecNumber);
+            } catch (final Exception exception) {
+                LOG.warn("[{}] There was an error while trying to save", ecNumber);
+                LOG.error("[{}] Error while trying to save", ecNumber, exception);
+            }
+        } else {
+            LOG.warn("Could not save, because EC / Result Message is not valid ..");
+        }
+    }
+
+    @Override
+    public List<ResultOutput> jsonOutput() {
+        return getAll().stream()
+                .map(res -> new ResultOutput(res.getEcNumber(), res.getMessage()))
+                .toList();
+    }
+
+    @Override
+    public void deleteAll() {
+        repository.deleteAll();
     }
 
     private boolean resultIsValid(String result) {
@@ -45,32 +74,7 @@ public class CheckoutFailedAutomationService {
         }
     }
 
-    public void save(final String ecNumber, final String message) {
-        if (ecIsValid(ecNumber) && resultIsValid(message)) {
-            try {
-                LOG.info("[{}] Attempting to save", ecNumber);
-                repository.save(new CheckoutFailedAutomation(ecNumber, message));
-                LOG.info("[{}] Saved", ecNumber);
-            } catch (final Exception exception) {
-                LOG.warn("[{}] There was an error while trying to save", ecNumber);
-                LOG.error("[{}] Error while trying to save", ecNumber, exception);
-            }
-        } else {
-            LOG.warn("Could not save, because EC / Result Message is not valid ..");
-        }
-    }
-
-    public List<ResultOutput> jsonOutput() {
-        return getAll().stream()
-                .map(res -> new ResultOutput(res.getEcNumber(), res.getMessage()))
-                .toList();
-    }
-
     private List<CheckoutFailedAutomation> getAll() {
         return repository.findAll();
-    }
-
-    public void deleteAll() {
-        repository.deleteAll();
     }
 }

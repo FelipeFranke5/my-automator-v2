@@ -2,11 +2,9 @@ package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.co
 
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dto.AutomationResult;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dto.MerchantsToEmailInput;
-import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dto.successful.SuccessfulAutomationOutput;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.EmailSender;
-import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.MerchantRunner;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.MerchantService;
-import java.time.LocalDateTime;
+import dev.franke.felipee.braspag_automator_v2.contracts.controller.EcSearchMainController;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,41 +17,47 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/retrieve-merchant")
-public class MerchantController {
+public class MerchantController implements EcSearchMainController {
 
     private final MerchantService merchantService;
     private final HeaderValidator headerValidator;
     private final EmailSender emailSender;
-    private final MerchantRunner merchantRunner;
 
     public MerchantController(
-            MerchantService merchantService,
-            HeaderValidator headerValidator,
-            EmailSender emailSender,
-            MerchantRunner merchantRunner) {
+            MerchantService merchantService, HeaderValidator headerValidator, EmailSender emailSender) {
         this.merchantService = merchantService;
         this.headerValidator = headerValidator;
         this.emailSender = emailSender;
-        this.merchantRunner = merchantRunner;
     }
 
+    @Override
     @PostMapping
-    public ResponseEntity<?> index(
-            @RequestBody String merchants, @RequestHeader(name = "Authorization") String authorizationHeader) {
+    public ResponseEntity<Void> executeAutomation(
+            @RequestBody String[] merchants, @RequestHeader(name = "Authorization") String authorizationHeader) {
         if (!headerValidator.headerIsValid(authorizationHeader)) {
             return ResponseEntity.status(401).build();
         }
+        runAutomation(merchants);
+        return ResponseEntity.noContent().build();
+    }
 
-        AutomationBodyResponse bodyResponse;
-
-        if (merchantRunner.inputIsValid(merchants)) {
-            runAutomation(merchants);
-            bodyResponse = new AutomationBodyResponse(LocalDateTime.now(), true);
-        } else {
-            bodyResponse = new AutomationBodyResponse(LocalDateTime.now(), false);
+    @Override
+    @GetMapping
+    public ResponseEntity<List<?>> getResultsInJson(@RequestHeader(name = "Authorization") String authorizationHeader) {
+        if (!headerValidator.headerIsValid(authorizationHeader)) {
+            return ResponseEntity.status(401).build();
         }
+        return ResponseEntity.ok(merchantService.jsonOutput());
+    }
 
-        return ResponseEntity.status(201).body(bodyResponse);
+    @Override
+    @DeleteMapping
+    public ResponseEntity<Void> deleteResults(@RequestHeader(name = "Authorization") String authorizationHeader) {
+        if (!headerValidator.headerIsValid(authorizationHeader)) {
+            return ResponseEntity.status(401).build();
+        }
+        merchantService.clear();
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/email")
@@ -87,26 +91,7 @@ public class MerchantController {
         };
     }
 
-    @GetMapping
-    public ResponseEntity<List<SuccessfulAutomationOutput>> getMerchants(
-            @RequestHeader(name = "Authorization") String authorizationHeader) {
-        if (!headerValidator.headerIsValid(authorizationHeader)) {
-            return ResponseEntity.status(401).build();
-        }
-        return ResponseEntity.ok(merchantService.jsonOutput());
-    }
-
-    @DeleteMapping
-    public ResponseEntity<?> deleteRecords(@RequestHeader(name = "Authorization") String authorizationHeader) {
-        if (!headerValidator.headerIsValid(authorizationHeader)) {
-            return ResponseEntity.status(401).build();
-        }
-
-        merchantService.clearAllMerchants();
-        return ResponseEntity.ok().build();
-    }
-
-    private void runAutomation(String merchants) {
+    private void runAutomation(String[] merchants) {
         merchantService.runAutomation(merchants);
     }
 }
