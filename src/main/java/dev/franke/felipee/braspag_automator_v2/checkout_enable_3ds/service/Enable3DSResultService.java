@@ -3,6 +3,7 @@ package dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.service;
 import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.dto.ResultOutput;
 import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.model.Enable3DSResult;
 import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.repository.Enable3DSResultRepository;
+import dev.franke.felipee.braspag_automator_v2.contracts.service.EcSearchMainService;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -10,14 +11,60 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class Enable3DSResultService {
+public class Enable3DSResultService implements EcSearchMainService {
 
     private static final Logger LOG = LoggerFactory.getLogger(Enable3DSResultService.class);
 
     private final Enable3DSResultRepository enable3dsResultRepository;
+    private final Enable3DSResultRunner runner;
 
-    public Enable3DSResultService(Enable3DSResultRepository enable3dsResultRepository) {
+    public Enable3DSResultService(Enable3DSResultRepository enable3dsResultRepository, Enable3DSResultRunner runner) {
         this.enable3dsResultRepository = enable3dsResultRepository;
+        this.runner = runner;
+    }
+
+    @Override
+    public List<Enable3DSResult> findAll() {
+        return enable3dsResultRepository.findAll();
+    }
+
+    @Override
+    public List<ResultOutput> jsonOutput() {
+        return findAll().stream()
+                .map(res -> new ResultOutput(res.getEc(), res.getResult()))
+                .toList();
+    }
+
+    @Override
+    public void clear() {
+        enable3dsResultRepository.deleteAll();
+    }
+
+    @Override
+    public void save(Object result) {
+        enable3dsResultRepository.save((Enable3DSResult) result);
+    }
+
+    @Override
+    public void runAutomation(String[] merchants) {
+        runner.run(merchants);
+    }
+
+    public void save(String ec, String result) {
+        LOG.info("Called to save automation result");
+        if (ecIsValid(ec) && resultIsValid(result)) {
+            try {
+                LOG.info("Trying to save");
+                Enable3DSResult enableResult = new Enable3DSResult(ec, result);
+                save(enableResult);
+                LOG.info("Saved");
+            } catch (Exception exception) {
+                LOG.warn("Unable to Save!");
+                LOG.error("Error to Save due to exception..", exception);
+            }
+        } else {
+            LOG.warn("Not saving result, because EC or result is not valid..");
+        }
     }
 
     private boolean resultIsValid(String result) {
@@ -41,27 +88,10 @@ public class Enable3DSResultService {
         }
     }
 
-    public void save(String ec, String result) {
-        LOG.info("Called to save automation result");
-        if (ecIsValid(ec) && resultIsValid(result)) {
-            try {
-                LOG.info("Trying to save");
-                Enable3DSResult enableResult = new Enable3DSResult(ec, result);
-                enable3dsResultRepository.save(enableResult);
-                LOG.info("Saved");
-            } catch (Exception exception) {
-                LOG.warn("Unable to Save!");
-                LOG.error("Error to Save due to exception..", exception);
-            }
-        } else {
-            LOG.warn("Not saving result, because EC or result is not valid..");
-        }
-    }
-
     public String resultsInString() {
         LOG.info("Called - Results in String");
         LOG.info("Max Results allowed = 100");
-        List<Enable3DSResult> results = allResults();
+        List<Enable3DSResult> results = findAll();
 
         if (results.isEmpty()) return "";
         if (results.size() > 100) return "POSSUI MAIS DE 100 REGISTROS! LIMPE OS REGISTROS OU UTILIZE A LISTA EM JSON";
@@ -74,21 +104,7 @@ public class Enable3DSResultService {
         return builder.toString();
     }
 
-    public List<ResultOutput> resultsJson() {
-        return allResults().stream()
-                .map(res -> new ResultOutput(res.getEc(), res.getResult()))
-                .toList();
-    }
-
-    public void deleteAll() {
-        enable3dsResultRepository.deleteAll();
-    }
-
     public boolean existsByEc(String ec) {
         return enable3dsResultRepository.existsByEc(ec);
-    }
-
-    private List<Enable3DSResult> allResults() {
-        return enable3dsResultRepository.findAll();
     }
 }
