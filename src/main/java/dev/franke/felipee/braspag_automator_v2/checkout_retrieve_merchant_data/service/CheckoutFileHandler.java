@@ -3,6 +3,7 @@ package dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.dto.CompletedAutomationOutputForExcel;
 import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.model.CheckoutCompletedAutomation;
+import dev.franke.felipee.braspag_automator_v2.contracts.service.EcSearchFileHandler;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -19,20 +20,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CheckoutFileHandler {
+public class CheckoutFileHandler implements EcSearchFileHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(CheckoutFileHandler.class);
 
     private final CheckoutCompletedAutomationService automationService;
     private final ObjectMapper objectMapper;
 
-    public CheckoutFileHandler(
-            final CheckoutCompletedAutomationService automationService, final ObjectMapper objectMapper) {
+    public CheckoutFileHandler(final CheckoutCompletedAutomationService automationService, ObjectMapper objectMapper) {
         this.automationService = automationService;
         this.objectMapper = objectMapper;
     }
 
-    public Optional<CheckoutCompletedAutomation> getMerchantDataFromFile(final String ec) {
+    public Optional<CheckoutCompletedAutomation> getMerchantDataFromFile(String ec) {
         if (ec == null || ec.isBlank() || ec.length() != 10) {
             LOG.warn("EC is not valid, returning null");
             return Optional.empty();
@@ -47,7 +47,8 @@ public class CheckoutFileHandler {
         }
     }
 
-    public void deleteJsonFileAfterAutomation(final String ec) {
+    @Override
+    public void deleteJsonFileAfterAutomation(String ec) {
         if (ec == null || ec.isBlank() || ec.length() != 10) {
             LOG.warn("Not deleting file, because EC is not valid");
             return;
@@ -62,6 +63,7 @@ public class CheckoutFileHandler {
         }
     }
 
+    @Override
     public byte[] writeToExcelFile() throws IOException {
         LOG.info("Initializing function to write to excel");
 
