@@ -2,6 +2,7 @@ package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.se
 
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.model.Merchant;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.repository.MerchantRepository;
+import dev.franke.felipee.braspag_automator_v2.contracts.service.EcSearchMailSender;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.io.IOException;
@@ -19,7 +20,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 @Service
-public class EmailSender {
+public class EmailSender implements EcSearchMailSender {
 
     private static final Logger LOG = LoggerFactory.getLogger(EmailSender.class);
     private static final ExecutorService executor = Executors.newFixedThreadPool(4);
@@ -38,6 +39,36 @@ public class EmailSender {
         this.merchantRepository = merchantRepository;
         this.validator = validator;
         this.fileHandler = fileHandler;
+    }
+
+    @Override
+    public byte sendEmailWithExcelResults(String emailAddress) {
+        LOG.info("Initializing service - Write to Excel and Send Email");
+
+        // Return 0 -> Task Completed
+        // Return 1 -> Email is not valid
+        // Return 2 -> Nothing to write
+
+        if (!validator.validEmail(emailAddress)) {
+            LOG.warn("Email Address is not valid!");
+            return 1;
+        }
+
+        List<Merchant> merchants = merchantRepository.findAll();
+
+        if (merchants.isEmpty()) {
+            LOG.info("Nothing to write!");
+            return 2;
+        }
+
+        LOG.info("Attempting to write results to Excel file");
+        LOG.info("And then send Email with Excel file");
+        LOG.info("Results count: {}", merchants.size());
+
+        handleExcelEmailTask(emailAddress);
+
+        LOG.info("Async task already started. I am free now to return");
+        return 0;
     }
 
     public void sendEmailInformingFailure(String emailAddressTo) {
@@ -91,39 +122,10 @@ public class EmailSender {
         }
     }
 
-    public byte sendEmailWithExcelResults(String emailAddress) {
-        LOG.info("Initializing service - Write to Excel and Send Email");
-
-        // Return 0 -> Task Completed
-        // Return 1 -> Email is not valid
-        // Return 2 -> Nothing to write
-
-        if (!validator.validEmail(emailAddress)) {
-            LOG.warn("Email Address is not valid!");
-            return 1;
-        }
-
-        List<Merchant> merchants = merchantRepository.findAll();
-
-        if (merchants.isEmpty()) {
-            LOG.info("Nothing to write!");
-            return 2;
-        }
-
-        LOG.info("Attempting to write results to Excel file");
-        LOG.info("And then send Email with Excel file");
-        LOG.info("Results count: {}", merchants.size());
-
-        handleExcelEmailTask(emailAddress, merchants);
-
-        LOG.info("Async task already started. I am free now to return");
-        return 0;
-    }
-
-    private void handleExcelEmailTask(String emailAddress, List<Merchant> merchants) {
+    private void handleExcelEmailTask(String emailAddress) {
         CompletableFuture.runAsync(
                 () -> {
-                    Optional<byte[]> optionalExcelBytes = writeToExcel(merchants);
+                    Optional<byte[]> optionalExcelBytes = writeToExcel();
 
                     optionalExcelBytes.ifPresentOrElse(
                             excelBytes -> {
@@ -140,9 +142,9 @@ public class EmailSender {
                 executor);
     }
 
-    private Optional<byte[]> writeToExcel(List<Merchant> merchants) {
+    private Optional<byte[]> writeToExcel() {
         try {
-            byte[] excelBytes = fileHandler.writeToExcelFile(merchants);
+            byte[] excelBytes = fileHandler.writeToExcelFile();
             return Optional.of(excelBytes);
         } catch (IOException ioException) {
             LOG.error("Could not execute routine to write excel", ioException);
