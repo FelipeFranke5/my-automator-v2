@@ -1,6 +1,7 @@
 package dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.service;
 
 import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.service.utils.ProcessExecutionEnable3DS;
+import dev.franke.felipee.braspag_automator_v2.contracts.service.AutomationRunner;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
@@ -13,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class Enable3DSResultRunner {
+public class Enable3DSResultRunner implements AutomationRunner {
 
     // Generic function to convert array to set
     public static <T> Set<T> convertArrayToSet(final T[] array) {
@@ -48,6 +49,7 @@ public class Enable3DSResultRunner {
         this.processExecutionEnable3DS = processExecutionEnable3DS;
     }
 
+    @Override
     public void run(final String[] ecs) {
         LOG.info("Initilizing..");
 
