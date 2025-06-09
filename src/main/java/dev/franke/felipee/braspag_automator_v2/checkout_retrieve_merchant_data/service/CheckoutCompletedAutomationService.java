@@ -4,6 +4,7 @@ import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.d
 import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.dto.CompletedAutomationOutputForExcel;
 import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.model.CheckoutCompletedAutomation;
 import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.repository.CheckoutCompletedAutomationRepository;
+import dev.franke.felipee.braspag_automator_v2.contracts.service.EcSearchMainService;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -11,43 +12,55 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CheckoutCompletedAutomationService {
+public class CheckoutCompletedAutomationService implements EcSearchMainService {
 
     private static final Logger LOG = LoggerFactory.getLogger(CheckoutCompletedAutomationService.class);
 
     private final CheckoutCompletedAutomationRepository repository;
+    private final CheckoutRunner runner;
 
-    public CheckoutCompletedAutomationService(CheckoutCompletedAutomationRepository repository) {
+    public CheckoutCompletedAutomationService(CheckoutCompletedAutomationRepository repository, CheckoutRunner runner) {
         this.repository = repository;
+        this.runner = runner;
     }
 
-    private boolean ecIsValid(String ec) {
-        if (ec == null) return false;
-        if (ec.isBlank()) return false;
-        if (ec.length() != 10) return false;
-
-        Optional<CheckoutCompletedAutomation> failOptional = repository.findByEc(ec);
-
-        if (failOptional.isPresent()) return false;
-
-        try {
-            return Long.parseLong(ec) > 0;
-        } catch (NumberFormatException numberFormatException) {
-            return false;
-        }
+    @Override
+    public List<CheckoutCompletedAutomation> findAll() {
+        return repository.findAll();
     }
 
-    public void save(CheckoutCompletedAutomation automation) {
-        if (ecIsValid(automation.getEc())) {
+    @Override
+    public List<CompletedAutomationOutput> jsonOutput() {
+        LOG.info("Output for Json called");
+        final List<CheckoutCompletedAutomation> originalList = repository.findAll();
+        return originalList.stream()
+                .map(original -> new CompletedAutomationOutput(original.getEc(), original.isBlocked()))
+                .toList();
+    }
+
+    @Override
+    public void clear() {
+        repository.deleteAll();
+    }
+
+    @Override
+    public void save(Object result) {
+        var data = (CheckoutCompletedAutomation) result;
+        if (ecIsValid(data.getEc())) {
             try {
                 LOG.info("Attempting to save result to DB");
-                repository.save(automation);
-            } catch (final Exception exception) {
+                repository.save(data);
+            } catch (Exception exception) {
                 LOG.error("Could not save result to DB", exception);
             }
         } else {
             LOG.warn("Automation is not being saved because EC is not valid ..");
         }
+    }
+
+    @Override
+    public void runAutomation(String[] merchants) {
+        runner.run(merchants);
     }
 
     public List<CompletedAutomationOutputForExcel> outputForExcel() {
@@ -72,19 +85,23 @@ public class CheckoutCompletedAutomationService {
                 .toList();
     }
 
-    public List<CompletedAutomationOutput> outputForJson() {
-        LOG.info("Output for Json called");
-        final List<CheckoutCompletedAutomation> originalList = repository.findAll();
-        return originalList.stream()
-                .map(original -> new CompletedAutomationOutput(original.getEc(), original.isBlocked()))
-                .toList();
-    }
-
-    public void deleteAll() {
-        repository.deleteAll();
-    }
-
     public boolean existsByEc(String ec) {
         return repository.existsByEc(ec);
+    }
+
+    private boolean ecIsValid(String ec) {
+        if (ec == null) return false;
+        if (ec.isBlank()) return false;
+        if (ec.length() != 10) return false;
+
+        Optional<CheckoutCompletedAutomation> failOptional = repository.findByEc(ec);
+
+        if (failOptional.isPresent()) return false;
+
+        try {
+            return Long.parseLong(ec) > 0;
+        } catch (NumberFormatException numberFormatException) {
+            return false;
+        }
     }
 }
