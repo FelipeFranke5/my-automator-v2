@@ -3,6 +3,7 @@ package dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.dto.CompletedAutomationOutputForExcel;
 import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.model.CheckoutCompletedAutomation;
+import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.repository.CheckoutCompletedAutomationRepository;
 import dev.franke.felipee.braspag_automator_v2.contracts.service.EcSearchFileHandler;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -24,11 +25,11 @@ public class CheckoutFileHandler implements EcSearchFileHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(CheckoutFileHandler.class);
 
-    private final CheckoutCompletedAutomationService automationService;
+    private final CheckoutCompletedAutomationRepository repository;
     private final ObjectMapper objectMapper;
 
-    public CheckoutFileHandler(final CheckoutCompletedAutomationService automationService, ObjectMapper objectMapper) {
-        this.automationService = automationService;
+    public CheckoutFileHandler(CheckoutCompletedAutomationRepository repository, ObjectMapper objectMapper) {
+        this.repository = repository;
         this.objectMapper = objectMapper;
     }
 
@@ -151,9 +152,25 @@ public class CheckoutFileHandler implements EcSearchFileHandler {
             headerCell.setCellStyle(headerStyle);
 
             final AtomicReference<Short> currentRowNumber = new AtomicReference<>((short) 1);
-            final List<CompletedAutomationOutputForExcel> merchants = automationService.outputForExcel();
+            final List<CompletedAutomationOutputForExcel> merchants = repository.findAll().stream()
+                    .map(merchant -> new CompletedAutomationOutputForExcel(
+                            merchant.getRecordId(),
+                            merchant.getEc(),
+                            merchant.getAlias(),
+                            merchant.getName(),
+                            merchant.isBlocked(),
+                            merchant.isTestModeEnabled(),
+                            merchant.isInternationalPaymentEnabled(),
+                            merchant.getNotificationUrl(),
+                            merchant.getReturnUrl(),
+                            merchant.getStatusChangeUrl(),
+                            merchant.isThreeDSEnabled(),
+                            merchant.getAmexMid(),
+                            merchant.isFacialAuthEnabled(),
+                            merchant.getRecordTimestamp()))
+                    .toList();
 
-            merchants.stream().forEach(merchant -> {
+            merchants.forEach(merchant -> {
                 final Row newRow = sheet.createRow(currentRowNumber.get());
 
                 final Cell ecCell = newRow.createCell(0);
