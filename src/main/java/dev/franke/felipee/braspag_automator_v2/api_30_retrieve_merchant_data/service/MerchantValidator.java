@@ -30,9 +30,7 @@ public class MerchantValidator {
 
         try {
             LOG.info("Attempting to check if EC is numeric and greater than zero");
-            boolean validationResult = Long.parseLong(merchantOrMerchantList) > 0;
-            LOG.info("Valid (Numeric and greater than zero): {}", validationResult ? "Valid" : "Invalid");
-            return validationResult;
+            return Long.parseLong(merchantOrMerchantList) > 0;
         } catch (NumberFormatException numberFormatException) {
             LOG.warn("Either the EC is not numeric or the length is invalid");
             return false;
@@ -84,5 +82,12 @@ public class MerchantValidator {
         }
 
         return PATTERN.matcher(address).matches();
+    }
+
+    public boolean merchantArrayIsValid(String[] ecsArray) {
+        for (String ecNumber : ecsArray) {
+            if (!singleEcIsValid(ecNumber)) return false;
+        }
+        return true;
     }
 }
