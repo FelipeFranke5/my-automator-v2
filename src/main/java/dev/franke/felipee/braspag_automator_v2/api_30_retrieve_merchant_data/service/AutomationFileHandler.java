@@ -1,11 +1,10 @@
 package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service;
 
-import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.model.Merchant;
+import dev.franke.felipee.braspag_automator_v2.contracts.service.EcSearchFileHandler;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -15,19 +14,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AutomationFileHandler {
+public class AutomationFileHandler implements EcSearchFileHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(AutomationFileHandler.class);
 
-    public void deleteExcelFileAfterNotification() {
-        try {
-            LOG.info("Attempting to delete the Excel file");
-            Files.deleteIfExists(Path.of("automation.xlsx"));
-        } catch (IOException ioException) {
-            LOG.error("There was an error while attempting to delete the Excel file", ioException);
-        }
+    private final MerchantService service;
+
+    public AutomationFileHandler(MerchantService service) {
+        this.service = service;
     }
 
+    @Override
     public void deleteJsonFileAfterAutomation(String ec) {
         if (ec == null || ec.isBlank() || ec.length() != 10) {
             LOG.warn("Not deleting file, because EC is not valid");
@@ -36,7 +33,6 @@ public class AutomationFileHandler {
 
         try {
             LOG.info("Attempting to delete the JSON file");
-            Path filePath = Path.of(ec + ".json");
             boolean result = Files.deleteIfExists(Path.of(ec + ".json"));
             LOG.info("Result of deletion: {}", result);
         } catch (IOException ioException) {
@@ -44,7 +40,8 @@ public class AutomationFileHandler {
         }
     }
 
-    public byte[] writeToExcelFile(List<Merchant> merchants) throws IOException {
+    @Override
+    public byte[] writeToExcelFile() throws IOException {
         LOG.info("Initializing function to write to excel");
         try (XSSFWorkbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Serviços Habilitados");
@@ -154,8 +151,9 @@ public class AutomationFileHandler {
             headerCell.setCellStyle(headerStyle);
 
             AtomicReference<Short> currentRowNumber = new AtomicReference<>((short) 1);
+            var merchantList = service.findAll();
 
-            merchants.stream().forEach(merchant -> {
+            merchantList.forEach(merchant -> {
                 Row newRow = sheet.createRow(currentRowNumber.get());
 
                 Cell ecCell = newRow.createCell(0);
