@@ -73,20 +73,24 @@ public class Enable3DSResultRunner implements AutomationRunner {
     }
 
     private void singleEcAutomation(final String ec) {
-        if (enable3dsResultService.existsByEc(ec)) {
-            LOG.warn("[{}] Automation is not going to be executed", ec);
-            LOG.warn("[{}] Already executed this task", ec);
-            return;
-        }
+        CompletableFuture.runAsync(
+                () -> {
+                    if (enable3dsResultService.existsByEc(ec)) {
+                        LOG.warn("[{}] Automation is not going to be executed", ec);
+                        LOG.warn("[{}] Already executed this task", ec);
+                        return;
+                    }
 
-        LOG.info("[{}] Automation is going to be executed", ec);
-        final String message = getResultMessageFromExecutionLastLine(getLastLine(ec));
+                    LOG.info("[{}] Automation is going to be executed", ec);
+                    final String message = getResultMessageFromExecutionLastLine(getLastLine(ec));
 
-        if (message.equals(SUCESS_MESSAGE) || message.equals(ALREADY_ENABLED_MESSAGE)) {
-            enable3dsResultService.save(ec, message);
-        } else {
-            enable3DSFailService.save(ec, message);
-        }
+                    if (message.equals(SUCESS_MESSAGE) || message.equals(ALREADY_ENABLED_MESSAGE)) {
+                        enable3dsResultService.save(ec, message);
+                    } else {
+                        enable3DSFailService.save(ec, message);
+                    }
+                },
+                executor);
     }
 
     private String getResultMessageFromExecutionLastLine(final byte result) {

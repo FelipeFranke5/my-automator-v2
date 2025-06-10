@@ -68,7 +68,7 @@ public class CheckoutRunner implements AutomationRunner {
         }
 
         final Set<String> ecNumbersSet = convertArrayToSet(merchantEcNumbers);
-        ecNumbersSet.forEach(ecNumber -> CompletableFuture.runAsync(() -> singleEcAsyncRoutine(ecNumber), executor));
+        ecNumbersSet.forEach(ecNumber -> singleEcAsyncRoutine(ecNumber));
     }
 
     private void invalidEcsRoutine(final String[] merchantEcNumbers) {
@@ -80,19 +80,24 @@ public class CheckoutRunner implements AutomationRunner {
     }
 
     private void singleEcAsyncRoutine(String ecNumber) {
-        if (automationService.existsByEc(ecNumber)) {
-            LOG.warn("A task with this EC number was executed already");
-            return;
-        }
+        CompletableFuture.runAsync(
+                () -> {
+                    if (automationService.existsByEc(ecNumber)) {
+                        LOG.warn("A task with this EC number was executed already");
+                        return;
+                    }
 
-        final byte result = singleEcRun(ecNumber);
+                    final byte result = singleEcRun(ecNumber);
 
-        if (result == 0) {
-            final var data = fileHandler.getMerchantDataFromFile(ecNumber);
-            data.ifPresentOrElse(
-                    automationService::save, () -> failedAutomationService.save(ecNumber, "Erro de execucao"));
-        }
-        fileHandler.deleteJsonFileAfterAutomation(ecNumber);
+                    if (result == 0) {
+                        final var data = fileHandler.getMerchantDataFromFile(ecNumber);
+                        data.ifPresentOrElse(
+                                automationService::save,
+                                () -> failedAutomationService.save(ecNumber, "Erro de execucao"));
+                    }
+                    fileHandler.deleteJsonFileAfterAutomation(ecNumber);
+                },
+                executor);
     }
 
     private byte singleEcRun(final String ecNumber) {
