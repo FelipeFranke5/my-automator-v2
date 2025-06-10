@@ -3,6 +3,7 @@ package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.co
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dto.AutomationResult;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dto.MerchantsToEmailInput;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.EmailSender;
+import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.MerchantRunner;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.MerchantService;
 import dev.franke.felipee.braspag_automator_v2.contracts.controller.EcSearchMainController;
 import java.util.List;
@@ -22,12 +23,17 @@ public class MerchantController implements EcSearchMainController {
     private final MerchantService merchantService;
     private final HeaderValidator headerValidator;
     private final EmailSender emailSender;
+    private final MerchantRunner runner;
 
     public MerchantController(
-            MerchantService merchantService, HeaderValidator headerValidator, EmailSender emailSender) {
+            MerchantService merchantService,
+            HeaderValidator headerValidator,
+            EmailSender emailSender,
+            MerchantRunner runner) {
         this.merchantService = merchantService;
         this.headerValidator = headerValidator;
         this.emailSender = emailSender;
+        this.runner = runner;
     }
 
     @Override
@@ -92,6 +98,6 @@ public class MerchantController implements EcSearchMainController {
     }
 
     private void runAutomation(String[] merchants) {
-        merchantService.runAutomation(merchants);
+        runner.run(merchants);
     }
 }

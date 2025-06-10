@@ -10,6 +10,4 @@ public interface EcSearchMainService {
     void clear();
 
     void save(Object object);
-
-    void runAutomation(String[] merchants);
 }

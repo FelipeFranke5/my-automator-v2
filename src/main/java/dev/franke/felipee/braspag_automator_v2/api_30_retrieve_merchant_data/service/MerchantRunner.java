@@ -60,7 +60,7 @@ public class MerchantRunner implements AutomationRunner {
                 () -> {
                     if (!validator.merchantArrayIsValid(merchantEcNumbers)) {
                         LOG.warn("Invalid input");
-                        // TODO: save to err
+                        failedScriptService.save("INVALIDO", "LISTA INVALIDA");
                         return;
                     }
                     Set<String> ecs = getEcSet(merchantEcNumbers);

@@ -16,11 +16,9 @@ public class Enable3DSResultService implements EcSearchMainService {
     private static final Logger LOG = LoggerFactory.getLogger(Enable3DSResultService.class);
 
     private final Enable3DSResultRepository enable3dsResultRepository;
-    private final Enable3DSResultRunner runner;
 
-    public Enable3DSResultService(Enable3DSResultRepository enable3dsResultRepository, Enable3DSResultRunner runner) {
+    public Enable3DSResultService(Enable3DSResultRepository enable3dsResultRepository) {
         this.enable3dsResultRepository = enable3dsResultRepository;
-        this.runner = runner;
     }
 
     @Override
@@ -43,11 +41,6 @@ public class Enable3DSResultService implements EcSearchMainService {
     @Override
     public void save(Object result) {
         enable3dsResultRepository.save((Enable3DSResult) result);
-    }
-
-    @Override
-    public void runAutomation(String[] merchants) {
-        runner.run(merchants);
     }
 
     public void save(String ec, String result) {
