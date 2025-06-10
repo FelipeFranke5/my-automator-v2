@@ -70,18 +70,22 @@ public class MerchantRunner implements AutomationRunner {
     }
 
     private void runAutomationForSingleMerchant(String ec) {
-        if (service.existsByEc(ec)) {
-            LOG.warn("[{}] Automation will not be executed! Already set up", ec);
-            return;
-        }
+        CompletableFuture.runAsync(
+                () -> {
+                    if (service.existsByEc(ec)) {
+                        LOG.warn("[{}] Automation will not be executed! Already set up", ec);
+                        return;
+                    }
 
-        LOG.info("[{}] Starting Automation process", ec);
-        Optional<Merchant> result = getAutomationResult(ec);
+                    LOG.info("[{}] Starting Automation process", ec);
+                    Optional<Merchant> result = getAutomationResult(ec);
 
-        result.ifPresent(res -> {
-            LOG.info("[{}] Automation Result is present. Saving to database", ec);
-            service.save(res);
-        });
+                    result.ifPresent(res -> {
+                        LOG.info("[{}] Automation Result is present. Saving to database", ec);
+                        service.save(res);
+                    });
+                },
+                executor);
     }
 
     private Optional<Merchant> getAutomationResult(String ec) {
