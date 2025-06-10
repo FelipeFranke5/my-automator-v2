@@ -4,6 +4,7 @@ import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.con
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dto.MerchantsToEmailInput;
 import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.service.CheckoutCompletedAutomationService;
 import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.service.CheckoutMailSender;
+import dev.franke.felipee.braspag_automator_v2.checkout_retrieve_merchant_data.service.CheckoutRunner;
 import dev.franke.felipee.braspag_automator_v2.contracts.controller.EcSearchMainController;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,14 +18,17 @@ public class CheckoutAutomationController implements EcSearchMainController {
     private final HeaderValidator headerValidator;
     private final CheckoutMailSender checkoutMailSender;
     private final CheckoutCompletedAutomationService checkoutCompletedAutomationService;
+    private final CheckoutRunner runner;
 
     public CheckoutAutomationController(
             HeaderValidator headerValidator,
             CheckoutMailSender checkoutMailSender,
-            CheckoutCompletedAutomationService checkoutCompletedAutomationService) {
+            CheckoutCompletedAutomationService checkoutCompletedAutomationService,
+            CheckoutRunner runner) {
         this.headerValidator = headerValidator;
         this.checkoutMailSender = checkoutMailSender;
         this.checkoutCompletedAutomationService = checkoutCompletedAutomationService;
+        this.runner = runner;
     }
 
     @Override
@@ -35,7 +39,7 @@ public class CheckoutAutomationController implements EcSearchMainController {
         if (!headerValidator.headerIsValid(authorizationHeader)) {
             ResponseEntity.status(401).build();
         }
-        checkoutCompletedAutomationService.runAutomation(merchantEcNumbers);
+        runner.run(merchantEcNumbers);
         return ResponseEntity.noContent().build();
     }
 

@@ -15,11 +15,9 @@ public class MerchantService implements EcSearchMainService {
     private static final Logger LOG = LoggerFactory.getLogger(MerchantService.class);
 
     private final MerchantRepository merchantRepository;
-    private final MerchantRunner runner;
 
-    public MerchantService(MerchantRepository merchantRepository, MerchantRunner runner) {
+    public MerchantService(MerchantRepository merchantRepository) {
         this.merchantRepository = merchantRepository;
-        this.runner = runner;
     }
 
     @Override
@@ -51,11 +49,6 @@ public class MerchantService implements EcSearchMainService {
         } catch (Exception exception) {
             LOG.error("Error during save", exception);
         }
-    }
-
-    @Override
-    public void runAutomation(String[] merchants) {
-        runner.run(merchants);
     }
 
     public boolean existsByEc(String ec) {

@@ -1,5 +1,6 @@
 package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service;
 
+import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.repository.MerchantRepository;
 import dev.franke.felipee.braspag_automator_v2.contracts.service.EcSearchFileHandler;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -18,10 +19,10 @@ public class AutomationFileHandler implements EcSearchFileHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(AutomationFileHandler.class);
 
-    private final MerchantService service;
+    private final MerchantRepository repository;
 
-    public AutomationFileHandler(MerchantService service) {
-        this.service = service;
+    public AutomationFileHandler(MerchantRepository repository) {
+        this.repository = repository;
     }
 
     @Override
@@ -151,7 +152,7 @@ public class AutomationFileHandler implements EcSearchFileHandler {
             headerCell.setCellStyle(headerStyle);
 
             AtomicReference<Short> currentRowNumber = new AtomicReference<>((short) 1);
-            var merchantList = service.findAll();
+            var merchantList = repository.findAll();
 
             merchantList.forEach(merchant -> {
                 Row newRow = sheet.createRow(currentRowNumber.get());

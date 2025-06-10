@@ -2,6 +2,7 @@ package dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.controller;
 
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.controller.HeaderValidator;
 import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.service.CheckoutMerchantValidator;
+import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.service.Enable3DSResultRunner;
 import dev.franke.felipee.braspag_automator_v2.checkout_enable_3ds.service.Enable3DSResultService;
 import dev.franke.felipee.braspag_automator_v2.contracts.controller.EcSearchMainController;
 import java.util.List;
@@ -15,14 +16,17 @@ public class Enable3DSResultController implements EcSearchMainController {
     private final HeaderValidator headerValidator;
     private final CheckoutMerchantValidator checkoutMerchantValidator;
     private final Enable3DSResultService enable3dsResultService;
+    private final Enable3DSResultRunner runner;
 
     public Enable3DSResultController(
             HeaderValidator headerValidator,
             CheckoutMerchantValidator checkoutMerchantValidator,
-            Enable3DSResultService enable3dsResultService) {
+            Enable3DSResultService enable3dsResultService,
+            Enable3DSResultRunner runner) {
         this.headerValidator = headerValidator;
         this.checkoutMerchantValidator = checkoutMerchantValidator;
         this.enable3dsResultService = enable3dsResultService;
+        this.runner = runner;
     }
 
     @Override
@@ -37,7 +41,7 @@ public class Enable3DSResultController implements EcSearchMainController {
             return ResponseEntity.badRequest().build();
         }
 
-        enable3dsResultService.runAutomation(ecs);
+        runner.run(ecs);
         return ResponseEntity.noContent().build();
     }
 

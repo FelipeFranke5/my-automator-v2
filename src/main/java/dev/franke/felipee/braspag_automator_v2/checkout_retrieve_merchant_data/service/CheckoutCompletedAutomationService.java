@@ -17,11 +17,9 @@ public class CheckoutCompletedAutomationService implements EcSearchMainService {
     private static final Logger LOG = LoggerFactory.getLogger(CheckoutCompletedAutomationService.class);
 
     private final CheckoutCompletedAutomationRepository repository;
-    private final CheckoutRunner runner;
 
-    public CheckoutCompletedAutomationService(CheckoutCompletedAutomationRepository repository, CheckoutRunner runner) {
+    public CheckoutCompletedAutomationService(CheckoutCompletedAutomationRepository repository) {
         this.repository = repository;
-        this.runner = runner;
     }
 
     @Override
@@ -56,11 +54,6 @@ public class CheckoutCompletedAutomationService implements EcSearchMainService {
         } else {
             LOG.warn("Automation is not being saved because EC is not valid ..");
         }
-    }
-
-    @Override
-    public void runAutomation(String[] merchants) {
-        runner.run(merchants);
     }
 
     public List<CompletedAutomationOutputForExcel> outputForExcel() {
