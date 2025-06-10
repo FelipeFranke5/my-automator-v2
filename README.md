@@ -38,26 +38,35 @@ Braspag Automator V2 é uma aplicação Spring Boot projetada para automatizar a
 
 ## Endpoints da API
 
-### EC Retrieve Merchant
+### [EC Retrieve Merchant] - Solução: **API 3.0**
 - `POST /api/v1/retrieve-merchant` — Inicia automação para um ou mais estabelecimentos.
-- `GET /api/v1/retrieve-merchant` — Lista estabelecimentos e status da automação.
-- `DELETE /api/v1/retrieve-merchant` — Exclui todos os registros de estabelecimentos.
-- `GET /api/v1/retrieve-merchant/failed` — Lista automações de estabelecimentos que falharam.
-- `DELETE /api/v1/retrieve-merchant/failed` — Limpa registros de falhas de automação de estabelecimentos.
+- `GET /api/v1/retrieve-merchant` — Lista ECs e status das automações com sucesso em formato JSON.
+- `DELETE /api/v1/retrieve-merchant` — Exclui todos os registros.
+- `GET /api/v1/retrieve-merchant/email` — Envia as automações com sucesso por E-mail (arquivo excel).
 
-### Checkout Retrieve Merchant
+### [EC Retrieve Merchant FAILED] - Solução: **API 3.0**
+- `GET /api/v1/retrieve-merchant/failed` — Lista automações que tiveram erro em formato JSON.
+- `DELETE /api/v1/retrieve-merchant/failed` — Exclui todos os registros de erro.
+
+### [Checkout Retrieve Merchant] - Solução: **Checkout**
 - `POST /api/v1/checkout/retrieve-merchant` — Inicia automação de checkout para um ou mais ECs.
-- `GET /api/v1/checkout/retrieve-merchant` — Lista ECs e status da automação de checkout.
-- `DELETE /api/v1/checkout/retrieve-merchant` — Exclui todos os registros de automação de checkout.
-- `GET /api/v1/checkout/retrieve-merchant/failed` — Lista automações de checkout que falharam.
-- `DELETE /api/v1/checkout/retrieve-merchant/failed` — Limpa registros de falhas de automação de checkout.
+- `GET /api/v1/checkout/retrieve-merchant` — Lista ECs e status das automações com sucesso de checkout em formato JSON.
+- `DELETE /api/v1/checkout/retrieve-merchant` — Exclui todos os registros.
+- `GET /api/v1/checkout/retrieve-merchant/email` — Envia as automações com sucesso por E-mail (arquivo excel).
 
-### Checkout Enable 3DS
+### [Checkout Retrieve Merchant FAILED] - Solução: **Checkout**
+- `GET /api/v1/checkout/retrieve-merchant/failed` — Lista automações que tiveram erro em formato JSON.
+- `DELETE /api/v1/checkout/retrieve-merchant/failed` — Exclui todos os registros de erro.
+
+### [Checkout Enable 3DS] - Solução: **Checkout**
 - `POST /api/v1/checkout/enable-3ds` — Habilita 3DS para um ou mais ECs.
 - `GET /api/v1/checkout/enable-3ds` — Consulta resultados da habilitação 3DS (JSON).
 - `DELETE /api/v1/checkout/enable-3ds` — Exclui todos os registros de habilitação 3DS.
-- `GET /api/v1/checkout/enable-3ds/failed` — Lista ECs que falharam na habilitação 3DS.
-- `DELETE /api/v1/checkout/enable-3ds/failed` — Limpa registros de falhas de habilitação 3DS.
+- `GET /api/v1/checkout/enable-3ds/text` — Consulta resultados da habilitação 3DS (texto).
+
+### [Checkout Enable 3DS FAILED] - Solução: **Checkout**
+- `GET /api/v1/checkout/enable-3ds/failed` — Consulta resultados que tiveram algum erro (JSON).
+- `DELETE /api/v1/checkout/enable-3ds/failed` — Exclui todos os registros de falha na automação.
 
 ## Estrutura do Projeto
 - `src/main/java/.../controller` — Controllers REST
