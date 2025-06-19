@@ -3,10 +3,16 @@ package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.co
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dto.AutomationResult;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.dto.MerchantsToEmailInput;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.EmailSender;
-import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.MerchantRunner;
+import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.FailedScriptService;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.MerchantService;
 import dev.franke.felipee.braspag_automator_v2.contracts.controller.EcSearchMainController;
+import io.awspring.cloud.sqs.operations.SqsTemplate;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,20 +26,27 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/retrieve-merchant")
 public class MerchantController implements EcSearchMainController {
 
+    private static final ExecutorService executor = Executors.newFixedThreadPool(4);
+    private static final Logger LOG = LoggerFactory.getLogger(MerchantController.class);
+    private static final String INITIAL_AUTOMATION_QUEUE_NAME = "api30-init";
+
+    private final SqsTemplate sqsTemplate;
+    private final FailedScriptService failedScriptService;
     private final MerchantService merchantService;
     private final HeaderValidator headerValidator;
     private final EmailSender emailSender;
-    private final MerchantRunner runner;
 
     public MerchantController(
+            SqsTemplate sqsTemplate,
+            FailedScriptService failedScriptService,
             MerchantService merchantService,
             HeaderValidator headerValidator,
-            EmailSender emailSender,
-            MerchantRunner runner) {
+            EmailSender emailSender) {
+        this.sqsTemplate = sqsTemplate;
+        this.failedScriptService = failedScriptService;
         this.merchantService = merchantService;
         this.headerValidator = headerValidator;
         this.emailSender = emailSender;
-        this.runner = runner;
     }
 
     @Override
@@ -43,7 +56,7 @@ public class MerchantController implements EcSearchMainController {
         if (!headerValidator.headerIsValid(authorizationHeader)) {
             return ResponseEntity.status(401).build();
         }
-        runAutomation(merchants);
+        sendMessageForECs(merchants);
         return ResponseEntity.noContent().build();
     }
 
@@ -54,6 +67,21 @@ public class MerchantController implements EcSearchMainController {
             return ResponseEntity.status(401).build();
         }
         return ResponseEntity.ok(merchantService.jsonOutput());
+    }
+
+    @Override
+    @GetMapping("/text")
+    public ResponseEntity<String> getResultsInText(@RequestHeader(name = "Authorization") String authorizationHeader) {
+        if (!headerValidator.headerIsValid(authorizationHeader)) {
+            return ResponseEntity.status(401).build();
+        }
+        StringBuilder builder = new StringBuilder();
+        builder.append("Automações com sucessso:").append("\n");
+        merchantService.jsonOutput().forEach(automation -> builder.append("\n").append(automation.ecNumber()));
+        builder.append("\n\nAutomações com erro:").append("\n");
+        failedScriptService.jsonOutput().forEach(automation -> builder.append("\n")
+                .append(automation.ecNumber()));
+        return ResponseEntity.ok(builder.toString());
     }
 
     @Override
@@ -97,7 +125,28 @@ public class MerchantController implements EcSearchMainController {
         };
     }
 
-    private void runAutomation(String[] merchants) {
-        runner.run(merchants);
+    private void sendMessageForECs(String[] ecs) {
+        CompletableFuture.runAsync(
+                () -> {
+                    for (String ec : ecs) {
+                        sendMessage(ec);
+                    }
+                },
+                executor);
+    }
+
+    private void sendMessage(String ec) {
+        LOG.info("[{}] Attempting to send message in order to initialize automation", ec);
+        try {
+            sqsTemplate.send(
+                    to -> to.queue(INITIAL_AUTOMATION_QUEUE_NAME).payload(ec).delaySeconds(20));
+            LOG.info("[{}] Message sent", ec);
+        } catch (Exception exception) {
+            LOG.error(
+                    "[{}] Error while attempting to send message to queue '{}'",
+                    ec,
+                    INITIAL_AUTOMATION_QUEUE_NAME,
+                    exception);
+        }
     }
 }

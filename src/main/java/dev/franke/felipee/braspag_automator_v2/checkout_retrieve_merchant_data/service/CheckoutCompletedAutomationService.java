@@ -46,10 +46,10 @@ public class CheckoutCompletedAutomationService implements EcSearchMainService {
         var data = (CheckoutCompletedAutomation) result;
         if (ecIsValid(data.getEc())) {
             try {
-                LOG.info("Attempting to save result to DB");
+                LOG.info("[{}] Attempting to save result to DB", data.getEc());
                 repository.save(data);
             } catch (Exception exception) {
-                LOG.error("Could not save result to DB", exception);
+                LOG.error("[{}] Could not save result to DB", data.getEc(), exception);
             }
         } else {
             LOG.warn("Automation is not being saved because EC is not valid ..");

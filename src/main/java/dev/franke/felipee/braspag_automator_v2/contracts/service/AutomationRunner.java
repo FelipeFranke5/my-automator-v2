@@ -1,5 +1,7 @@
 package dev.franke.felipee.braspag_automator_v2.contracts.service;
 
+import java.util.Optional;
+
 public interface AutomationRunner {
-    void run(String[] merchantEcNumbers);
+    Optional<?> singleEcRoutine(String ecNumber);
 }

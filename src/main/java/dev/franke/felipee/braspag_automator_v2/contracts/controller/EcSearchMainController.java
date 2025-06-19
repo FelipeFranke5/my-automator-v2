@@ -8,5 +8,7 @@ public interface EcSearchMainController {
 
     ResponseEntity<List<?>> getResultsInJson(String header);
 
+    ResponseEntity<String> getResultsInText(String header);
+
     ResponseEntity<Void> deleteResults(String header);
 }
