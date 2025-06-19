@@ -37,7 +37,7 @@ public class CheckoutFailedAutomationService implements EcSearchFailedMainServic
                 LOG.error("[{}] Error while trying to save", ecNumber, exception);
             }
         } else {
-            LOG.warn("Could not save, because EC / Result Message is not valid ..");
+            LOG.warn("[{}] Could not save, because EC / Result Message is not valid", ecNumber);
         }
     }
 

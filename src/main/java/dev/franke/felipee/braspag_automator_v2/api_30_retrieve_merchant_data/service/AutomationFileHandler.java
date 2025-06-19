@@ -33,11 +33,11 @@ public class AutomationFileHandler implements EcSearchFileHandler {
         }
 
         try {
-            LOG.info("Attempting to delete the JSON file");
+            LOG.info("[{}] Attempting to delete the JSON file", ec);
             boolean result = Files.deleteIfExists(Path.of(ec + ".json"));
-            LOG.info("Result of deletion: {}", result);
+            LOG.info("[{}] Result of deletion: {}", ec, result);
         } catch (IOException ioException) {
-            LOG.error("There was an error while attempting to delete the JSON file", ioException);
+            LOG.error("[{}] There was an error while attempting to delete the JSON file", ec, ioException);
         }
     }
 

@@ -60,7 +60,7 @@ public class CheckoutFileHandler implements EcSearchFileHandler {
             final boolean result = Files.deleteIfExists(Path.of(ec + ".json"));
             LOG.info("[{}] Result of deletion: {}", ec, result);
         } catch (final IOException ioException) {
-            LOG.error("There was an error while attempting to delete the JSON file", ioException);
+            LOG.error("[{}] There was an error while attempting to delete the JSON file", ec, ioException);
         }
     }
 

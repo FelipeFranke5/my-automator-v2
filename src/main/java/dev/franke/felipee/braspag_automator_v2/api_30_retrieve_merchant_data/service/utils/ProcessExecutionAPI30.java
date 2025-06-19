@@ -45,31 +45,31 @@ public class ProcessExecutionAPI30 {
     }
 
     public String run(String ec) throws IOException {
-        LOG.info("Starting process for Python execution");
+        LOG.info("[{}] Starting process for Python execution", ec);
         ProcessBuilder processBuilder = getProcessBuilder(ec);
 
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
-        LOG.info("Process has started with PID {}", process.pid());
+        LOG.info("[{}] Process has started with PID {}", ec, process.pid());
 
         InputStreamReader inputStreamReader = new InputStreamReader(process.getInputStream(), Charset.defaultCharset());
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
         String lastLine = "";
         String currentLine;
 
-        LOG.info("Going through each line for process with PID {}", process.pid());
+        LOG.info("[{}] Going through each line for process with PID {}", ec, process.pid());
         while ((currentLine = bufferedReader.readLine()) != null) {
             lastLine = currentLine;
         }
 
-        LOG.info("Last line for PID {} was: {}", process.pid(), lastLine);
+        LOG.info("[{}] Last line for PID {} was: {}", ec, process.pid(), lastLine);
         return lastLine;
     }
 
     private ProcessBuilder getProcessBuilder(String ec) {
-        LOG.info("Defining the process");
+        LOG.info("[{}] Defining the process", ec);
         String fullCommand = getScriptForMakingScriptExecutable() + " && " + getExecutableString(ec);
-        LOG.info("Process defined");
+        LOG.info("[{}] Process defined", ec);
         return new ProcessBuilder("/bin/sh", "-c", fullCommand);
     }
 

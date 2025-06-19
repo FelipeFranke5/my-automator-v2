@@ -47,6 +47,10 @@ public class CheckoutMerchantValidator {
         }
     }
 
+    public boolean ecIsValid(String ecNumber) {
+        return singleEcIsValid(ecNumber);
+    }
+
     public boolean allEcsAreValid(final String[] ecs) {
         for (final String ecNumber : ecs) {
             if (!(singleEcIsValid(ecNumber))) return false;

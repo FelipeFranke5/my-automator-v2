@@ -24,16 +24,6 @@ public class FailedScriptService implements EcSearchFailedMainService {
 
     @Override
     public void save(String ecNumber, String message) {
-        if (merchantService.existsByEc(ecNumber)) {
-            LOG.warn("Already registered in the completed automations. Not Saving record");
-            return;
-        }
-
-        if (existsByEcNumber(ecNumber)) {
-            LOG.warn("Already registered. Not Saving record");
-            return;
-        }
-
         if (ecNumber == null || ecNumber.isBlank()) {
             LOG.warn("EC Number is null or blank, not saving record");
             return;
@@ -44,13 +34,24 @@ public class FailedScriptService implements EcSearchFailedMainService {
             return;
         }
 
+        if (merchantService.existsByEc(ecNumber)) {
+            LOG.warn("[{}] Already registered in the completed automations. Not Saving record", ecNumber);
+            return;
+        }
+
+        if (existsByEcNumber(ecNumber)) {
+            LOG.warn("[{}] Already registered. Not Saving record", ecNumber);
+            return;
+        }
+
         var record = new FailedScriptRecord(ecNumber, message);
-        LOG.info("Saving failed script record for EC Number: {}, Message: {}", ecNumber, message);
+        LOG.info("[{}] Saving failed script record for EC", ecNumber);
 
         try {
             failedScriptRepository.save(record);
+            LOG.info("[{}] Saved failed script record.", ecNumber);
         } catch (Exception e) {
-            LOG.error("Failed to save record: {}", e.getMessage());
+            LOG.error("[{}] Failed to save record: {}", ecNumber, e.getMessage());
         }
     }
 

@@ -19,23 +19,23 @@ public class MerchantValidator {
 
     private boolean singleEcIsValid(String merchantOrMerchantList) {
         if (merchantOrMerchantList.contains(",")) {
-            LOG.warn("EC contains the character ',' - Returning false");
+            LOG.warn("[{}] EC contains the character ',' - Returning false", merchantOrMerchantList);
             return false;
         }
 
         if (merchantOrMerchantList.length() != 10) {
-            LOG.warn("EC length does not equal 10 - Returning false");
+            LOG.warn("[{}] EC length does not equal 10 - Returning false", merchantOrMerchantList);
             return false;
         }
 
         try {
-            LOG.info("Attempting to check if EC is numeric and greater than zero");
+            LOG.info("[{}] Attempting to check if EC is numeric and greater than zero", merchantOrMerchantList);
             return Long.parseLong(merchantOrMerchantList) > 0;
         } catch (NumberFormatException numberFormatException) {
-            LOG.warn("Either the EC is not numeric or the length is invalid");
+            LOG.warn("[{}] Either the EC is not numeric or the length is invalid", merchantOrMerchantList);
             return false;
         } finally {
-            LOG.info("Validation has completed");
+            LOG.info("[{}] Validation has completed", merchantOrMerchantList);
         }
     }
 
@@ -44,8 +44,7 @@ public class MerchantValidator {
         String[] merchantsArray = merchantOrMerchantList.split(",");
 
         for (String merchant : merchantsArray) {
-            LOG.info("Merchant - {}", merchant);
-            LOG.info("Merchant Length is Invalid: {}", merchant.length() != 10 ? "Yes" : "No");
+            LOG.info("[{}] Merchant Length is Invalid: {}", merchant, merchant.length() != 10 ? "Yes" : "No");
 
             if (!(singleEcIsValid(merchant))) {
                 return false;

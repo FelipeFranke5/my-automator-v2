@@ -42,12 +42,12 @@ public class MerchantService implements EcSearchMainService {
     @Override
     public void save(Object merchant) {
         var data = (Merchant) merchant;
-        LOG.info("Attempting to save record");
+        LOG.info("[{}] Attempting to save record", data.getEc());
         try {
             merchantRepository.save(data);
-            LOG.info("Record saved");
+            LOG.info("[{}] Record saved", data.getEc());
         } catch (Exception exception) {
-            LOG.error("Error during save", exception);
+            LOG.error("[{}] Error during save", data.getEc(), exception);
         }
     }
 
