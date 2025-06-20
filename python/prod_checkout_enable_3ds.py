@@ -51,6 +51,7 @@ class Automation:
             raise BraspagInternalServerError()
 
     def login(self):
+        time.sleep(10)
         self.driver.get("https://admin.braspag.com.br/Admin/Home")
 
         username_input = self.wait.until(EC.element_to_be_clickable((By.ID, "param1")))
@@ -64,17 +65,17 @@ class Automation:
         password_input.clear()
         password_input.send_keys(self.args.password)
         submit_button.click()
-        time.sleep(0.5)
+        time.sleep(1)
 
         self.check_title()
 
     def find_merchant(self):
         cielo_link = self.wait.until(EC.element_to_be_clickable((By.ID, "cielo")))
         cielo_link.click()
-        time.sleep(0.5)
+        time.sleep(1)
         checkout_cielo_ecs_link = self.wait.until(EC.element_to_be_clickable((By.ID, "checkoutCieloEcs")))
         checkout_cielo_ecs_link.click()
-        time.sleep(0.5)
+        time.sleep(1)
         self.driver.switch_to.window(self.driver.window_handles[1])
 
         affiliation_code_input = self.wait.until(EC.element_to_be_clickable((By.ID, "AffiliationCode")))
@@ -86,7 +87,7 @@ class Automation:
 
         button_search = self.wait.until(EC.element_to_be_clickable((By.ID, "buttonSearch")))
         button_search.click()
-        time.sleep(0.5)
+        time.sleep(1)
 
         title_elements = self.wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "title")))
         found_results_text = False
@@ -111,7 +112,7 @@ class Automation:
                 merchant_link_table = self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, "td")))[0]
                 merchant_link = merchant_link_table.find_elements(By.TAG_NAME, "a")[0]
                 merchant_link.click()
-                time.sleep(0.5)
+                time.sleep(1)
 
         if not found_results_text:
             raise MerchantElementsNotFound()
@@ -139,10 +140,10 @@ class Automation:
     def enable_secure_3d(self):
         secure_3d_checkbox = self.wait.until(EC.element_to_be_clickable((By.ID, "CreditCardAuthenticationRequired")))
         secure_3d_checkbox.click()
-        time.sleep(0.5)
+        time.sleep(1)
         save_button = self.wait.until(EC.element_to_be_clickable((By.XPATH, "//input[@type='submit']")))
         save_button.click()
-        time.sleep(0.5)
+        time.sleep(1)
 
         if not self.secure_3ds_is_enabled():
             raise CouldNotSave()
