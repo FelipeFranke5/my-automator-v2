@@ -49,6 +49,7 @@ class Automation:
             raise BraspagInternalServerError()
 
     def login(self):
+        time.sleep(10)
         self.driver.get("https://admin.braspag.com.br/Admin/Home")
 
         username_input = self.wait.until(EC.element_to_be_clickable((By.ID, "param1")))
@@ -62,7 +63,7 @@ class Automation:
         password_input.clear()
         password_input.send_keys(self.args.password)
         submit_button.click()
-        time.sleep(0.5)
+        time.sleep(1)
 
         self.check_title()
 
@@ -79,7 +80,7 @@ class Automation:
         ec_input.send_keys(self.args.ec)
         start_date_input.clear()
         search_button.click()
-        time.sleep(0.5)
+        time.sleep(1)
 
         self.loading_state()
 
@@ -96,6 +97,7 @@ class Automation:
             title_attribute = link_element.get_attribute("title")
             if title_attribute and "Ver Detalhes" in title_attribute:
                 link_element.click()
+                time.sleep(1)
                 return
 
         raise NoSuchElementException()
@@ -353,7 +355,6 @@ def main():
     else:
         print("Unexpected error")
         sys.exit(1)
-
 
 
 if __name__ == "__main__":
