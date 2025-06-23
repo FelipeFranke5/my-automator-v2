@@ -81,6 +81,12 @@
 			<artifactId>spring-cloud-aws-starter</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>dev.franke.felipe</groupId>
+			<artifactId>api30_automation</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
 	</dependencies>
 
 	<dependencyManagement>
