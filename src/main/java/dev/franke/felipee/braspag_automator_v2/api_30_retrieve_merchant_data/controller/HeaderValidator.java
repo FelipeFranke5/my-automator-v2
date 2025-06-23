@@ -1,15 +1,13 @@
 package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.controller;
 
 import java.util.Base64;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.exception.InvalidHeaderException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class HeaderValidator {
-
-    private static final Logger LOG = LoggerFactory.getLogger(HeaderValidator.class);
 
     @Value("${braspag.prod.login}")
     private String login;
@@ -17,39 +15,77 @@ public class HeaderValidator {
     @Value("${braspag.prod.password}")
     private String password;
 
-    private boolean isProperlyFormatted(String headerValue) {
-        LOG.info("Starting to check if the Header is valid");
+    public void validate(String userHeader) {
+        checkUserHeaderIsValid(userHeader);
+        checkCredentialsAreEqual(getEcondedString(userHeader), getEncodedHeader());
+    }
 
-        if (headerValue == null) {
-            LOG.warn("Header value is null!");
-            return false;
+    private String[] getHeaderParts(String header) {
+        return header.split("Base64 ");
+    }
+
+    private boolean headerPartAfterBase64IsNullOrBlank(String[] headerParts) {
+        var secondPart = headerParts[1];
+        return secondPart == null || secondPart.isBlank();
+    }
+
+    private boolean headerPartsLengthIsValid(String header) {
+        var headerParts = getHeaderParts(header);
+        return headerParts.length == 2;
+    }
+
+    private boolean headerIsNullOrBlank(String header) {
+        return header == null || header.isBlank();
+    }
+
+    private boolean headerStartsWithBase64(String header) {
+        return header.startsWith("Base64 ");
+    }
+
+    private boolean encodedUserHeaderEqualsServerEncodedHeader(String encodedUserHeader, String encodedServerHeader) {
+        return encodedUserHeader.equals(encodedServerHeader);
+    }
+
+    private void checkUserHeaderIsValid(String headerValue) {
+        checkHeaderNullOrBlank(headerValue);
+        checkHeaderStartsWithBase64(headerValue);
+        checkHeaderLengthIsValid(headerValue);
+        checkHeaderPartAfterBase64IsValid(headerValue);
+    }
+
+    private void checkCredentialsAreEqual(String encodedUserHeader, String encodedServerHeader) {
+        if (!encodedUserHeaderEqualsServerEncodedHeader(encodedUserHeader, encodedServerHeader)) {
+            throw new InvalidHeaderException("Credentials are not valid");
         }
+    }
 
-        if (headerValue.isBlank()) {
-            LOG.warn("Header value is blank!");
-            return false;
+    private void checkHeaderPartAfterBase64IsValid(String header) {
+        var headerParts = getHeaderParts(header);
+        if (headerPartAfterBase64IsNullOrBlank(headerParts)) {
+            throw new InvalidHeaderException("Header Part after Base64 is Null or Blank");
         }
+    }
 
-        if (!headerValue.startsWith("Base64 ")) {
-            LOG.warn("Invalid Header! Does not start with Base64 prefix");
-            return false;
-        }
-
+    private void checkHeaderLengthIsValid(String header) {
         try {
-            String credentials = headerValue.split("Base64 ")[1].trim();
-
-            if (credentials.isBlank()) {
-                LOG.warn("Credentials part is blank!");
-                return false;
+            if (!headerPartsLengthIsValid(header)) {
+                throw new InvalidHeaderException("Invalid Header Length");
             }
         } catch (IndexOutOfBoundsException indexOutOfBoundsException) {
-            LOG.warn("Invalid String, could not parse the authorization value");
-            LOG.warn("Out of bounds error");
-            return false;
+            throw new InvalidHeaderException("Invalid Header Length");
         }
+    }
 
-        LOG.info("Validation completed. It is properly formatted");
-        return true;
+    private void checkHeaderNullOrBlank(String header) {
+        if (headerIsNullOrBlank(header)) {
+            throw new InvalidHeaderException("Header is null or blank");
+        }
+    }
+
+    private void checkHeaderStartsWithBase64(String header) {
+        if (!headerStartsWithBase64(header)) {
+            throw new InvalidHeaderException("Header does not start with Base64");
+        }
     }
 
     private String getConcatenatedCredentials() {
@@ -62,9 +98,5 @@ public class HeaderValidator {
 
     private String getEncodedHeader() {
         return Base64.getEncoder().encodeToString(getConcatenatedCredentials().getBytes());
-    }
-
-    public boolean headerIsValid(String headerValue) {
-        return isProperlyFormatted(headerValue) && getEcondedString(headerValue).equals(getEncodedHeader());
     }
 }

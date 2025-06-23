@@ -46,9 +46,7 @@ public class Enable3DSResultController implements EcSearchMainController {
     @PostMapping
     public ResponseEntity<Void> executeAutomation(
             @RequestBody String[] ecs, @RequestHeader(name = "Authorization") String authorizationHeader) {
-        if (!headerValidator.headerIsValid(authorizationHeader)) {
-            return ResponseEntity.status(401).build();
-        }
+        headerValidator.validate(authorizationHeader);
 
         if (!checkoutMerchantValidator.allEcsAreValid(ecs)) {
             return ResponseEntity.badRequest().build();
@@ -61,18 +59,14 @@ public class Enable3DSResultController implements EcSearchMainController {
     @Override
     @GetMapping
     public ResponseEntity<List<?>> getResultsInJson(@RequestHeader(name = "Authorization") String authorizationHeader) {
-        if (!headerValidator.headerIsValid(authorizationHeader)) {
-            return ResponseEntity.status(401).build();
-        }
+        headerValidator.validate(authorizationHeader);
         return ResponseEntity.ok(enable3dsResultService.jsonOutput());
     }
 
     @Override
     @GetMapping("/text")
     public ResponseEntity<String> getResultsInText(@RequestHeader(name = "Authorization") String authorizationHeader) {
-        if (!headerValidator.headerIsValid(authorizationHeader)) {
-            return ResponseEntity.status(401).build();
-        }
+        headerValidator.validate(authorizationHeader);
         StringBuilder builder = new StringBuilder();
         builder.append("Automações com sucessso:").append("\n");
         enable3dsResultService.jsonOutput().forEach(automation -> builder.append("\n")
@@ -86,9 +80,7 @@ public class Enable3DSResultController implements EcSearchMainController {
     @Override
     @DeleteMapping
     public ResponseEntity<Void> deleteResults(@RequestHeader(name = "Authorization") String authorizationHeader) {
-        if (!headerValidator.headerIsValid(authorizationHeader)) {
-            return ResponseEntity.status(401).build();
-        }
+        headerValidator.validate(authorizationHeader);
         enable3dsResultService.clear();
         return ResponseEntity.noContent().build();
     }
