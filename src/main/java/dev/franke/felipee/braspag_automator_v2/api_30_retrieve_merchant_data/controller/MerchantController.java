@@ -53,9 +53,7 @@ public class MerchantController implements EcSearchMainController {
     @PostMapping
     public ResponseEntity<Void> executeAutomation(
             @RequestBody String[] merchants, @RequestHeader(name = "Authorization") String authorizationHeader) {
-        if (!headerValidator.headerIsValid(authorizationHeader)) {
-            return ResponseEntity.status(401).build();
-        }
+        headerValidator.validate(authorizationHeader);
         sendMessageForECs(merchants);
         return ResponseEntity.noContent().build();
     }
@@ -63,18 +61,14 @@ public class MerchantController implements EcSearchMainController {
     @Override
     @GetMapping
     public ResponseEntity<List<?>> getResultsInJson(@RequestHeader(name = "Authorization") String authorizationHeader) {
-        if (!headerValidator.headerIsValid(authorizationHeader)) {
-            return ResponseEntity.status(401).build();
-        }
+        headerValidator.validate(authorizationHeader);
         return ResponseEntity.ok(merchantService.jsonOutput());
     }
 
     @Override
     @GetMapping("/text")
     public ResponseEntity<String> getResultsInText(@RequestHeader(name = "Authorization") String authorizationHeader) {
-        if (!headerValidator.headerIsValid(authorizationHeader)) {
-            return ResponseEntity.status(401).build();
-        }
+        headerValidator.validate(authorizationHeader);
         StringBuilder builder = new StringBuilder();
         builder.append("Automações com sucessso:").append("\n");
         merchantService.jsonOutput().forEach(automation -> builder.append("\n").append(automation.ecNumber()));
@@ -87,9 +81,7 @@ public class MerchantController implements EcSearchMainController {
     @Override
     @DeleteMapping
     public ResponseEntity<Void> deleteResults(@RequestHeader(name = "Authorization") String authorizationHeader) {
-        if (!headerValidator.headerIsValid(authorizationHeader)) {
-            return ResponseEntity.status(401).build();
-        }
+        headerValidator.validate(authorizationHeader);
         merchantService.clear();
         return ResponseEntity.ok().build();
     }
@@ -98,9 +90,7 @@ public class MerchantController implements EcSearchMainController {
     public ResponseEntity<?> getMerchantsToEmail(
             @RequestHeader(name = "Authorization") String authorizationHeader,
             @RequestBody MerchantsToEmailInput input) {
-        if (!headerValidator.headerIsValid(authorizationHeader)) {
-            return ResponseEntity.status(401).build();
-        }
+        headerValidator.validate(authorizationHeader);
 
         if (input == null) {
             return ResponseEntity.status(400).body("Email is required");

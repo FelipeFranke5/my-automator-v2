@@ -51,9 +51,7 @@ public class CheckoutAutomationController implements EcSearchMainController {
     public ResponseEntity<Void> executeAutomation(
             @RequestBody String[] merchantEcNumbers,
             @RequestHeader(name = "Authorization") String authorizationHeader) {
-        if (!headerValidator.headerIsValid(authorizationHeader)) {
-            ResponseEntity.status(401).build();
-        }
+        headerValidator.validate(authorizationHeader);
         sendMessageForECs(merchantEcNumbers);
         return ResponseEntity.noContent().build();
     }
@@ -86,18 +84,14 @@ public class CheckoutAutomationController implements EcSearchMainController {
     @Override
     @GetMapping
     public ResponseEntity<List<?>> getResultsInJson(@RequestHeader(name = "Authorization") String authorizationHeader) {
-        if (!headerValidator.headerIsValid(authorizationHeader)) {
-            return ResponseEntity.status(401).build();
-        }
+        headerValidator.validate(authorizationHeader);
         return ResponseEntity.ok(checkoutCompletedAutomationService.jsonOutput());
     }
 
     @Override
     @GetMapping("/text")
     public ResponseEntity<String> getResultsInText(@RequestHeader(name = "Authorization") String authorizationHeader) {
-        if (!headerValidator.headerIsValid(authorizationHeader)) {
-            return ResponseEntity.status(401).build();
-        }
+        headerValidator.validate(authorizationHeader);
         StringBuilder builder = new StringBuilder();
         builder.append("Automações com sucessso:").append("\n");
         checkoutCompletedAutomationService.jsonOutput().forEach(automation -> builder.append("\n")
@@ -111,9 +105,7 @@ public class CheckoutAutomationController implements EcSearchMainController {
     @Override
     @DeleteMapping
     public ResponseEntity<Void> deleteResults(@RequestHeader(name = "Authorization") String authorizationHeader) {
-        if (!headerValidator.headerIsValid(authorizationHeader)) {
-            return ResponseEntity.status(401).build();
-        }
+        headerValidator.validate(authorizationHeader);
         checkoutCompletedAutomationService.clear();
         checkoutFailedAutomationService.deleteAll();
         return ResponseEntity.noContent().build();
@@ -123,9 +115,7 @@ public class CheckoutAutomationController implements EcSearchMainController {
     public ResponseEntity<?> getMerchantsToEmail(
             @RequestHeader(name = "Authorization") String authorizationHeader,
             @RequestBody final MerchantsToEmailInput input) {
-        if (!headerValidator.headerIsValid(authorizationHeader)) {
-            return ResponseEntity.status(401).build();
-        }
+        headerValidator.validate(authorizationHeader);
         EmailResponseBody result;
         if (input.email() == null || input.email().isEmpty()) {
             result = new EmailResponseBody(LocalDateTime.now(), "Email e obrigatorio");
