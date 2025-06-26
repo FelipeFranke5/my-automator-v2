@@ -1,8 +1,7 @@
 package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.controller;
 
-import java.util.Base64;
-
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.exception.InvalidHeaderException;
+import java.util.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
