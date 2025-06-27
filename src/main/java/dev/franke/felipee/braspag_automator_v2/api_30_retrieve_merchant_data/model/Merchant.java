@@ -1,9 +1,6 @@
 package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -13,83 +10,76 @@ import org.hibernate.annotations.CreationTimestamp;
 public class Merchant {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID recordId;
-
-    private String ec;
-
-    @JsonProperty("mid")
     private UUID id;
 
-    @JsonProperty("document_type")
+    private String establishmentCode;
+    private UUID merchantId;
     private String documentType;
-
-    @JsonProperty("document_number")
     private String documentNumber;
-
     private String name;
-
-    @JsonProperty("created_at")
-    private String createdAt;
-
     private boolean blocked;
-
-    @JsonProperty("pix_enabled")
     private boolean pixEnabled;
-
-    @JsonProperty("antifraud_enabled")
     private boolean antifraudEnabled;
-
-    @JsonProperty("tokenization_enabled")
     private boolean tokenizationEnabled;
-
-    @JsonProperty("velocity_enabled")
     private boolean velocityEnabled;
-
-    @JsonProperty("smart_recurrency_enabled")
     private boolean smartRecurrencyEnabled;
-
-    @JsonProperty("zero_dollar_auth_enabled")
-    private boolean zeroDollarAuthEnabled;
-
-    @JsonProperty("bin_query_enabled")
+    private boolean zeroAuthEnabled;
     private boolean binQueryEnabled;
-
-    @JsonProperty("selective_auth_enabled")
     private boolean selectiveAuthEnabled;
-
-    @JsonProperty("try_automatic_cancellation_enabled")
-    private boolean tryAutomaticCancellationEnabled;
-
-    @JsonProperty("force_braspag_auth_enabled")
+    private boolean automaticCancelationEnabled;
     private boolean forceBraspagAuthEnabled;
-
-    @JsonProperty("mtls_enabled")
     private boolean mtlsEnabled;
-
-    @JsonProperty("webhook_enabled")
     private boolean webhookEnabled;
-
-    @JsonProperty("white_list_ip_count")
-    private int whiteListIpCount;
+    private byte whiteListIpCount;
 
     @CreationTimestamp
     private LocalDateTime recordTimestamp;
 
-    public UUID getRecordId() {
-        return recordId;
-    }
+    public Merchant() {}
 
-    public void setRecordId(UUID recordId) {
-        this.recordId = recordId;
-    }
-
-    public String getEc() {
-        return ec;
-    }
-
-    public void setEc(String ec) {
-        this.ec = ec;
+    public Merchant(
+            UUID id,
+            String establishmentCode,
+            UUID merchantId,
+            String documentType,
+            String documentNumber,
+            String name,
+            boolean blocked,
+            boolean pixEnabled,
+            boolean antifraudEnabled,
+            boolean tokenizationEnabled,
+            boolean velocityEnabled,
+            boolean smartRecurrencyEnabled,
+            boolean zeroAuthEnabled,
+            boolean binQueryEnabled,
+            boolean selectiveAuthEnabled,
+            boolean automaticCancelationEnabled,
+            boolean forceBraspagAuthEnabled,
+            boolean mtlsEnabled,
+            boolean webhookEnabled,
+            byte whiteListIpCount,
+            LocalDateTime recordTimestamp) {
+        this.id = id;
+        this.establishmentCode = establishmentCode;
+        this.merchantId = merchantId;
+        this.documentType = documentType;
+        this.documentNumber = documentNumber;
+        this.name = name;
+        this.blocked = blocked;
+        this.pixEnabled = pixEnabled;
+        this.antifraudEnabled = antifraudEnabled;
+        this.tokenizationEnabled = tokenizationEnabled;
+        this.velocityEnabled = velocityEnabled;
+        this.smartRecurrencyEnabled = smartRecurrencyEnabled;
+        this.zeroAuthEnabled = zeroAuthEnabled;
+        this.binQueryEnabled = binQueryEnabled;
+        this.selectiveAuthEnabled = selectiveAuthEnabled;
+        this.automaticCancelationEnabled = automaticCancelationEnabled;
+        this.forceBraspagAuthEnabled = forceBraspagAuthEnabled;
+        this.mtlsEnabled = mtlsEnabled;
+        this.webhookEnabled = webhookEnabled;
+        this.whiteListIpCount = whiteListIpCount;
+        this.recordTimestamp = recordTimestamp;
     }
 
     public UUID getId() {
@@ -98,6 +88,22 @@ public class Merchant {
 
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public String getEstablishmentCode() {
+        return establishmentCode;
+    }
+
+    public void setEstablishmentCode(String establishmentCode) {
+        this.establishmentCode = establishmentCode;
+    }
+
+    public UUID getMerchantId() {
+        return merchantId;
+    }
+
+    public void setMerchantId(UUID merchantId) {
+        this.merchantId = merchantId;
     }
 
     public String getDocumentType() {
@@ -122,14 +128,6 @@ public class Merchant {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
     }
 
     public boolean isBlocked() {
@@ -180,12 +178,12 @@ public class Merchant {
         this.smartRecurrencyEnabled = smartRecurrencyEnabled;
     }
 
-    public boolean isZeroDollarAuthEnabled() {
-        return zeroDollarAuthEnabled;
+    public boolean isZeroAuthEnabled() {
+        return zeroAuthEnabled;
     }
 
-    public void setZeroDollarAuthEnabled(boolean zeroDollarAuthEnabled) {
-        this.zeroDollarAuthEnabled = zeroDollarAuthEnabled;
+    public void setZeroAuthEnabled(boolean zeroAuthEnabled) {
+        this.zeroAuthEnabled = zeroAuthEnabled;
     }
 
     public boolean isBinQueryEnabled() {
@@ -204,12 +202,12 @@ public class Merchant {
         this.selectiveAuthEnabled = selectiveAuthEnabled;
     }
 
-    public boolean isTryAutomaticCancellationEnabled() {
-        return tryAutomaticCancellationEnabled;
+    public boolean isAutomaticCancelationEnabled() {
+        return automaticCancelationEnabled;
     }
 
-    public void setTryAutomaticCancellationEnabled(boolean tryAutomaticCancellationEnabled) {
-        this.tryAutomaticCancellationEnabled = tryAutomaticCancellationEnabled;
+    public void setAutomaticCancelationEnabled(boolean automaticCancelationEnabled) {
+        this.automaticCancelationEnabled = automaticCancelationEnabled;
     }
 
     public boolean isForceBraspagAuthEnabled() {
@@ -236,11 +234,11 @@ public class Merchant {
         this.webhookEnabled = webhookEnabled;
     }
 
-    public int getWhiteListIpCount() {
+    public byte getWhiteListIpCount() {
         return whiteListIpCount;
     }
 
-    public void setWhiteListIpCount(int whiteListIpCount) {
+    public void setWhiteListIpCount(byte whiteListIpCount) {
         this.whiteListIpCount = whiteListIpCount;
     }
 
