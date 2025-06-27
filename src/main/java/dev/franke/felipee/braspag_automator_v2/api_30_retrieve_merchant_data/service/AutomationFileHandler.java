@@ -1,7 +1,6 @@
 package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service;
 
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.repository.MerchantRepository;
-import dev.franke.felipee.braspag_automator_v2.contracts.service.EcSearchFileHandler;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,20 +11,17 @@ import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AutomationFileHandler implements EcSearchFileHandler {
+public class AutomationFileHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(AutomationFileHandler.class);
 
-    private final MerchantRepository repository;
+    @Autowired
+    private MerchantRepository repository;
 
-    public AutomationFileHandler(MerchantRepository repository) {
-        this.repository = repository;
-    }
-
-    @Override
     public void deleteJsonFileAfterAutomation(String ec) {
         if (ec == null || ec.isBlank() || ec.length() != 10) {
             LOG.warn("Not deleting file, because EC is not valid");
@@ -41,7 +37,6 @@ public class AutomationFileHandler implements EcSearchFileHandler {
         }
     }
 
-    @Override
     public byte[] writeToExcelFile() throws IOException {
         LOG.info("Initializing function to write to excel");
         try (XSSFWorkbook workbook = new XSSFWorkbook()) {
@@ -158,7 +153,7 @@ public class AutomationFileHandler implements EcSearchFileHandler {
                 Row newRow = sheet.createRow(currentRowNumber.get());
 
                 Cell ecCell = newRow.createCell(0);
-                ecCell.setCellValue(merchant.getEc());
+                ecCell.setCellValue(merchant.getEstablishmentCode());
                 ecCell.setCellStyle(bodyStyle);
 
                 Cell midCell = newRow.createCell(1);
@@ -178,7 +173,7 @@ public class AutomationFileHandler implements EcSearchFileHandler {
                 nameCell.setCellStyle(bodyStyle);
 
                 Cell createdAtCell = newRow.createCell(5);
-                createdAtCell.setCellValue(merchant.getCreatedAt());
+                createdAtCell.setCellValue("NA");
                 createdAtCell.setCellStyle(bodyStyle);
 
                 Cell blockedCell = newRow.createCell(6);
@@ -206,7 +201,7 @@ public class AutomationFileHandler implements EcSearchFileHandler {
                 recurrentEnabledCell.setCellStyle(bodyStyle);
 
                 Cell zeroDollarEnabledCell = newRow.createCell(12);
-                zeroDollarEnabledCell.setCellValue(merchant.isZeroDollarAuthEnabled() ? "SIM" : "NÃO");
+                zeroDollarEnabledCell.setCellValue(merchant.isZeroAuthEnabled() ? "SIM" : "NÃO");
                 zeroDollarEnabledCell.setCellStyle(bodyStyle);
 
                 Cell binQueryEnabledCell = newRow.createCell(13);
@@ -218,8 +213,7 @@ public class AutomationFileHandler implements EcSearchFileHandler {
                 selectiveAuthEnabledCell.setCellStyle(bodyStyle);
 
                 Cell automaticCancellationEnabledCell = newRow.createCell(15);
-                automaticCancellationEnabledCell.setCellValue(
-                        merchant.isTryAutomaticCancellationEnabled() ? "SIM" : "NÃO");
+                automaticCancellationEnabledCell.setCellValue(merchant.isAutomaticCancelationEnabled() ? "SIM" : "NÃO");
                 automaticCancellationEnabledCell.setCellStyle(bodyStyle);
 
                 Cell forceAuthEnabledCell = newRow.createCell(16);

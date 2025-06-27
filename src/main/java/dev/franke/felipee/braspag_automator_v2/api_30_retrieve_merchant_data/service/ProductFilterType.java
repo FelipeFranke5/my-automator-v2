@@ -1,0 +1,19 @@
+package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service;
+
+public enum ProductFilterType {
+    NO_FILTER,
+    MERCHANT_BLOCKED,
+    PIX_ENABLED,
+    ANTIFRAUD_ENABLED,
+    TOKENIZATION_ENABLED,
+    VELOCITY_ENABLED,
+    SMART_RECURRENCY_ENABLED,
+    ZERO_AUTH_ENABLED,
+    BIN_QUERY_ENABLED,
+    SELECTIVE_AUTH_ENABLED,
+    AUTOMATIC_CANCELLATION_ENABLED,
+    FORCE_BRASPAG_AUTH_ENABLED,
+    MTLS_ENABLED,
+    WEBHOOK_ENABLED,
+    AT_LEAST_ONE_IP
+}

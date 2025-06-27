@@ -1,8 +1,9 @@
 package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service;
 
+import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.exception.EmptyQueryException;
+import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.exception.InvalidEmailException;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.model.Merchant;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.repository.MerchantRepository;
-import dev.franke.felipee.braspag_automator_v2.contracts.service.EcSearchMailSender;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.io.IOException;
@@ -14,61 +15,47 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 @Service
-public class EmailSender implements EcSearchMailSender {
+public class EmailSender {
 
-    private static final Logger LOG = LoggerFactory.getLogger(EmailSender.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EmailSender.class.getName());
     private static final ExecutorService executor = Executors.newFixedThreadPool(4);
 
-    private final JavaMailSender mailSender;
-    private final MerchantRepository merchantRepository;
-    private final MerchantValidator validator;
-    private final AutomationFileHandler fileHandler;
+    @Autowired
+    private JavaMailSender mailSender;
 
-    public EmailSender(
-            JavaMailSender mailSender,
-            MerchantRepository merchantRepository,
-            MerchantValidator validator,
-            AutomationFileHandler fileHandler) {
-        this.mailSender = mailSender;
-        this.merchantRepository = merchantRepository;
-        this.validator = validator;
-        this.fileHandler = fileHandler;
+    @Autowired
+    private MerchantRepository merchantRepository;
+
+    @Autowired
+    private MerchantValidator validator;
+
+    @Autowired
+    private AutomationFileHandler fileHandler;
+
+    public void sendEmailWithExcelResults(String emailAddress) {
+        assertEmailIsValid(emailAddress);
+        assertMerchantsAreNotEmpty();
+        handleExcelEmailTask(emailAddress);
     }
 
-    @Override
-    public byte sendEmailWithExcelResults(String emailAddress) {
-        LOG.info("Initializing service - Write to Excel and Send Email");
-
-        // Return 0 -> Task Completed
-        // Return 1 -> Email is not valid
-        // Return 2 -> Nothing to write
-
-        if (!validator.validEmail(emailAddress)) {
-            LOG.warn("Email Address is not valid!");
-            return 1;
+    private void assertEmailIsValid(String email) {
+        if (!validator.validEmail(email)) {
+            throw new InvalidEmailException("Email is not valid");
         }
+    }
 
+    private void assertMerchantsAreNotEmpty() {
         List<Merchant> merchants = merchantRepository.findAll();
-
         if (merchants.isEmpty()) {
-            LOG.info("Nothing to write!");
-            return 2;
+            throw new EmptyQueryException("Merchant query is empty");
         }
-
-        LOG.info("Attempting to write results to Excel file");
-        LOG.info("And then send Email with Excel file");
-        LOG.info("Results count: {}", merchants.size());
-
-        handleExcelEmailTask(emailAddress);
-
-        LOG.info("Async task already started. I am free now to return");
-        return 0;
     }
 
     public void sendEmailInformingFailure(String emailAddressTo) {
@@ -93,7 +80,7 @@ public class EmailSender implements EcSearchMailSender {
         }
     }
 
-    public void sendEmailWithResults(byte[] excelBytes, String emailAddressTo) {
+    private void sendEmailWithResults(byte[] excelBytes, String emailAddressTo) {
         LOG.info("Initialized service to send Email for sucessful result");
         try {
             // Mime Message
