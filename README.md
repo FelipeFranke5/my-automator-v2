@@ -11,3 +11,4 @@ relatórios de dados de estabelecimentos (merchants) a partir da API 3.0 da Bras
 - H2 (Banco de dados em memória)
 - Apache POI (geração de Excel)
 - SLF4J (logging)
+- [braspag-java-api30-automation](https://github.com/FelipeFranke5/braspag-java-api30-automation)
