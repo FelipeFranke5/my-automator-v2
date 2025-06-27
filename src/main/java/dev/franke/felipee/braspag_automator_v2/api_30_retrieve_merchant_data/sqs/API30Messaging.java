@@ -1,96 +1,83 @@
 package dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.sqs;
 
+import dev.franke.felipe.api30_automation_api.automation.merchant_data.domain.CieloMerchant;
+import dev.franke.felipe.api30_automation_api.automation.merchant_data.domain.EstablishmentCodeImpl;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.model.Merchant;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.FailedScriptService;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.MerchantRunner;
 import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.MerchantService;
-import dev.franke.felipee.braspag_automator_v2.api_30_retrieve_merchant_data.service.MerchantValidator;
 import io.awspring.cloud.sqs.annotation.SqsListener;
-import io.awspring.cloud.sqs.operations.SqsTemplate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 @Component
 public class API30Messaging {
 
-    private static final Logger LOG = LoggerFactory.getLogger(API30Messaging.class);
     private static final String INITIAL_QUEUE_NAME = "api30-init";
-    private static final String FAIL_QUEUE_NAME = "api30-fail";
-    private static final String SUCCESS_QUEUE_NAME = "api30-success";
 
-    private final MerchantValidator merchantValidator;
     private final MerchantRunner merchantRunner;
     private final MerchantService merchantService;
     private final FailedScriptService failedScriptService;
-    private final SqsTemplate sqsTemplate;
 
     public API30Messaging(
-            MerchantValidator merchantValidator,
-            MerchantRunner merchantRunner,
-            MerchantService merchantService,
-            FailedScriptService failedScriptService,
-            SqsTemplate sqsTemplate) {
-        this.merchantValidator = merchantValidator;
+            MerchantRunner merchantRunner, MerchantService merchantService, FailedScriptService failedScriptService) {
         this.merchantRunner = merchantRunner;
         this.merchantService = merchantService;
         this.failedScriptService = failedScriptService;
-        this.sqsTemplate = sqsTemplate;
     }
 
     @SqsListener(INITIAL_QUEUE_NAME)
     public void api30Listener(String ecNumber) {
-        LOG.info("[{}] Received message for automation", ecNumber);
-        if (merchantValidator.merchantArrayIsValid(new String[] {ecNumber})) {
-            merchantRunner
-                    .singleEcRoutine(ecNumber)
-                    .ifPresentOrElse(this::sendResultMessage, () -> sendFailMessage(ecNumber));
-            return;
+        try {
+            String establishmentCode = validateAndReturnBackEcNumber(ecNumber);
+            Merchant merchant = getMerchant(getCieloMerchant(establishmentCode));
+            saveMerchantWhenSuccess(merchant);
+        } catch (Exception exception) {
+            saveFailedAutomation(new FailedAutomationSqsPayload(ecNumber, exception));
         }
-        sendFailMessage(ecNumber);
     }
 
-    @SqsListener(SUCCESS_QUEUE_NAME)
-    public void enable3dsSucessListener(Merchant merchant) {
-        LOG.info("[{}] Received message for sucessful automation", merchant.getEc());
+    public void saveMerchantWhenSuccess(Merchant merchant) {
         merchantService.save(merchant);
-        LOG.info("[{}] Saved the result", merchant.getEc());
     }
 
-    @SqsListener(FAIL_QUEUE_NAME)
-    public void enable3dsFailListener(String ec) {
-        LOG.info("[{}] Received message for fail automation", ec);
-        failedScriptService.save(ec, "Erro de execucao");
-        LOG.info("[{}] Saved fail result", ec);
+    public void saveFailedAutomation(FailedAutomationSqsPayload payload) {
+        failedScriptService.save(
+                payload.establishmentCode(), payload.exception().getMessage());
     }
 
-    private void sendResultMessage(Merchant merchant) {
-        LOG.info("[{}] Sending message to sucess queue '{}'", merchant.getEc(), SUCCESS_QUEUE_NAME);
-        sendSqsMessageSucess(merchant);
+    private Merchant getMerchant(CieloMerchant cieloMerchant) {
+        return new Merchant(
+                UUID.randomUUID(),
+                cieloMerchant.establishmentCode(),
+                cieloMerchant.merchantId(),
+                cieloMerchant.documentType(),
+                cieloMerchant.documentNumber(),
+                cieloMerchant.name(),
+                cieloMerchant.blocked(),
+                cieloMerchant.pixEnabled(),
+                cieloMerchant.antifraudEnabled(),
+                cieloMerchant.tokenizationEnabled(),
+                cieloMerchant.velocityEnabled(),
+                cieloMerchant.smartRecurrencyEnabled(),
+                cieloMerchant.zeroAuthEnabled(),
+                cieloMerchant.binQueryEnabled(),
+                cieloMerchant.selectiveAuthEnabled(),
+                cieloMerchant.automaticCancelationEnabled(),
+                cieloMerchant.forceBraspagAuthEnabled(),
+                cieloMerchant.mtlsEnabled(),
+                cieloMerchant.webhookEnabled(),
+                cieloMerchant.whiteListIpCount(),
+                LocalDateTime.now());
     }
 
-    private void sendFailMessage(String ec) {
-        sendSqsMessageFail(ec);
+    private CieloMerchant getCieloMerchant(String ecNumber) {
+        return merchantRunner.singleEcRoutine(ecNumber);
     }
 
-    private void sendSqsMessageSucess(Merchant merchant) {
-        LOG.info("[{}] Attempting to send message for successful result", merchant.getEc());
-        try {
-            sqsTemplate.send(
-                    to -> to.queue(SUCCESS_QUEUE_NAME).payload(merchant).delaySeconds(20));
-            LOG.info("[{}] Message Sent!", merchant.getEc());
-        } catch (Exception exception) {
-            LOG.error("[{}] Error while attempting to send message", merchant.getEc(), exception);
-        }
-    }
-
-    private void sendSqsMessageFail(String ec) {
-        LOG.info("[{}] Attempting to send message for fail result", ec);
-        try {
-            sqsTemplate.send(to -> to.queue(FAIL_QUEUE_NAME).payload(ec).delaySeconds(20));
-            LOG.info("[{}] Message Sent for Failed Automation!", ec);
-        } catch (Exception exception) {
-            LOG.error("[{}] Error occured while attempting to send message", ec, exception);
-        }
+    private String validateAndReturnBackEcNumber(String ecNumber) {
+        EstablishmentCodeImpl establishmentCode = new EstablishmentCodeImpl(ecNumber);
+        return establishmentCode.establishmentNumber();
     }
 }
