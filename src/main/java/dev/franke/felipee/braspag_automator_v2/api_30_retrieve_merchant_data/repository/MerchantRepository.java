@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MerchantRepository extends JpaRepository<Merchant, UUID> {
-    boolean existsByEc(String ec);
+    boolean existsByEstablishmentCode(String establishmentCode);
 }
