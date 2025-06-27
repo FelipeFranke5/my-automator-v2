@@ -7,4 +7,6 @@ import java.util.UUID;
 public record SuccessfulAutomationOutput(
         UUID id,
         @JsonProperty("numeroEc") String ecNumber,
+        @JsonProperty("nome") String name,
+        @JsonProperty("bloqueado") boolean blocked,
         @JsonProperty("dataRegistro") LocalDateTime recordTimestamp) {}
