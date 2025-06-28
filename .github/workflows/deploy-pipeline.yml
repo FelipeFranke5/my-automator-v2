@@ -20,9 +20,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           check-latest: false
-          server-id: github
-          server-username: ${{ secrets.SERVER_USERNAME }}
-          server-password: ${{ secrets.SERVER_PASSWORD }}
+          cache: 'maven'
       - name: Clean Package
         run: mvn clean package -B -DskipTests
 
