@@ -14,15 +14,22 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Setup Maven Settings
+        uses: s4u/maven-settings-action@v3.1.0
+        with:
+          servers: |
+            [{
+                "id": "github",
+                "username": "${{ secrets.SERVER_USERNAME }}",
+                "password": "${{ secrets.SERVER_PASSWORD }}"
+            }]
+
       - name: Build Using Maven
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           check-latest: false
-          cache: 'maven'
-          server-username: ${{ secrets.SERVER_USERNAME }}
-          server-password: ${{ secrets.SERVER_PASSWORD }}
       - name: Clean Package
         run: mvn clean package -B -DskipTests
 
