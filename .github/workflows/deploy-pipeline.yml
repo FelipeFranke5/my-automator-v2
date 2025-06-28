@@ -19,6 +19,10 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          check-latest: false
+          cache: 'maven'
+          server-username: ${{ secrets.SERVER_USERNAME }}
+          server-password: ${{ secrets.SERVER_PASSWORD }}
       - name: Clean Package
         run: mvn clean package -B -DskipTests
 
