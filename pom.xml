@@ -90,9 +90,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>dev.franke.felipe</groupId>
-			<artifactId>api30_automation</artifactId>
-			<version>0.0.1</version>
+			<groupId>com.github.FelipeFranke5</groupId>
+			<artifactId>braspag-java-api30-automation</artifactId>
+			<version>13b8187</version>
 		</dependency>
 
 	</dependencies>
